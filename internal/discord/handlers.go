@@ -5,11 +5,6 @@ import (
 	"log"
 )
 
-// internal imports
-import (
-	"github.com/coex1/EchoBot/internal/wink"
-)
-
 // external packages
 import (
 	dgo "github.com/bwmarrin/discordgo"
@@ -26,12 +21,7 @@ var readyEvent = func(s *dgo.Session, r *dgo.Ready) {
 var interactionCreateEvent = func(s *dgo.Session, event *dgo.InteractionCreate) {
   switch event.Type {
   case dgo.InteractionApplicationCommand:
-    switch event.ApplicationCommandData().Name {
-    case "wink":
-      wink.SelectUserHandler(s, event)
-    case "mafia":
-      mafia.SelectUserHandler(s, event)
-    }
+    handleApplicationCommand(s, event)
   case dgo.InteractionMessageComponent:
     switch event.ApplicationCommandData().Name {
     case "wink":
@@ -48,7 +38,7 @@ var interactionCreateEvent = func(s *dgo.Session, event *dgo.InteractionCreate) 
       case "user_select_menu":
         mafia.handleSelectMenu(s, event)
       case "start_button":
-        mafia.mafiaStartButton(s, event) // mafiaStartButton
+        mafia.StartButton(s, event)
       }
     }
   }

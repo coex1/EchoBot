@@ -1,22 +1,31 @@
-package main
+package mafia
 
+// system packages
 import (
 	"log"
 	"math/rand"
 	"time"
-
-	"github.com/bwmarrin/discordgo"
 )
 
-func mafiaStartButton(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	mafiaCount := i.ApplicationCommandData().Options[0].IntValue()
-	policeCount := i.ApplicationCommandData().Options[1].IntValue()
-	doctorCount := i.ApplicationCommandData().Options[2].IntValue()
+// internal imports
+import (
+	"github.com/coex1/EchoBot/internal/discord"
+)
+
+// external packages
+import (
+	dgo "github.com/bwmarrin/discordgo"
+)
+
+func StartButton(s *dgo.Session, event *dgo.InteractionCreate) {
+	mafiaCount := event.ApplicationCommandData().Options[0].IntValue()
+	policeCount := event.ApplicationCommandData().Options[1].IntValue()
+	doctorCount := event.ApplicationCommandData().Options[2].IntValue()
 
 	var mafiaSelected, policeSelected, doctorSelected []string
 	totalCount := int(mafiaCount + policeCount + doctorCount)
 
-	tempSelectedMembers := selectedUsersMap[i.GuildID]
+	tempSelectedMembers := selectedUsersMap[event.GuildID]
 	if len(tempSelectedMembers) == 0 {
 		log.Println("No members selected.")
 		return
@@ -29,8 +38,8 @@ func mafiaStartButton(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	shuffled := make([]string, 0)
 	copy(shuffled, tempSelectedMembers)
-	r.Shuffle(len(shuffled), func(i, j int) {
-		shuffled[i], shuffled[j] = shuffled[j], shuffled[i]
+	r.Shuffle(len(shuffled), func(event, j int) {
+		shuffled[event], shuffled[j] = shuffled[j], shuffled[event]
 	})
 	mafiaSelected = shuffled[:mafiaCount]
 	shuffled = shuffled[mafiaCount:]
