@@ -16,6 +16,7 @@ var (
 	BotToken       = flag.String("token", "", "")
 	GuildID        = flag.String("guild", "1271088825560727592", "")
 	RemoveCommands = flag.Bool("rmcmd", true, "Remove all commands after shutdowning or not")
+	Game           string
 )
 
 var session *discordgo.Session
@@ -37,6 +38,30 @@ var (
 			Name:        "wink",
 			Description: "Start wink game",
 		},
+		{
+			Name:        "mafia",
+			Description: "Start mafia game",
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Name:        "마피아",
+					Description: "Number of Mafia players",
+					Type:        discordgo.ApplicationCommandOptionInteger,
+					Required:    true,
+				},
+				{
+					Name:        "경찰",
+					Description: "Number of Police players",
+					Type:        discordgo.ApplicationCommandOptionInteger,
+					Required:    true,
+				},
+				{
+					Name:        "의사",
+					Description: "Number of Doctor players",
+					Type:        discordgo.ApplicationCommandOptionInteger,
+					Required:    true,
+				},
+			},
+		},
 	}
 )
 
@@ -44,18 +69,27 @@ func init() {
 	session.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		switch i.Type {
 		case discordgo.InteractionApplicationCommand:
-			switch i.ApplicationCommandData().Name {
-			case "wink":
-				selectUserHandler(s, i)
+			switch Game = i.ApplicationCommandData().Name; Game {
+			case "wink", "mafia":
+				selectUserHandler(s, i, Game)
 			}
 		case discordgo.InteractionMessageComponent:
-			switch i.MessageComponentData().CustomID {
-			case "user_select_menu":
-				handleSelectMenu(s, i)
-			case "start_button":
-				handleStartButton(s, i)
-			case "check", "cancel":
-				followUpHandler(s, i)
+			if Game == "wink" {
+				switch i.MessageComponentData().CustomID {
+				case "user_select_menu":
+					handleSelectMenu(s, i)
+				case "start_button":
+					winkStartButton(s, i)
+				case "check", "cancel":
+					winkFollowUpHandler(s, i)
+				}
+			} else if Game == "mafia" {
+				switch i.MessageComponentData().CustomID {
+				case "user_select_menu":
+					handleSelectMenu(s, i)
+				case "start_button":
+					mafiaStartButton(s, i)
+				}
 			}
 		}
 	})

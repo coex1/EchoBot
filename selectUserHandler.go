@@ -8,9 +8,11 @@ import (
 
 var (
 	selectedUsersMap = make(map[string][]string)
+	MinValues        int
+	MaxValues        int
 )
 
-func selectUserHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func selectUserHandler(s *discordgo.Session, i *discordgo.InteractionCreate, game string) {
 	// 길드 멤버 가져오기
 	members, err := s.GuildMembers(i.GuildID, "", 25)
 	if err != nil {
@@ -29,8 +31,12 @@ func selectUserHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			})
 		}
 	}
-	MinValues := 1
-	MaxValues := len(options)
+	if game == "wink" {
+		MinValues = 3
+	} else if game == "mafia" {
+		MinValues = 5
+	}
+	MaxValues = len(options)
 
 	// SelectMenu와 ActionRow 설정
 	selectMenu := discordgo.SelectMenu{
@@ -73,37 +79,6 @@ func selectUserHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 
 	selectedUsersMap[i.GuildID] = make([]string, 0)
-}
-
-// Select 버튼이 눌렸을 때 선택된 멤버들을 처리하는 핸들러
-func handleStartButton(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	// 선택된 멤버 ID 목록을 가져옴
-	tempSelectedMembers := selectedUsersMap[i.GuildID]
-	if len(tempSelectedMembers) == 0 {
-		log.Println("No members selected.")
-		return
-	}
-
-	king := Get(tempSelectedMembers)
-	var message string
-	for _, v := range tempSelectedMembers {
-		if v == king {
-			message = "당신은 왕 입니다!"
-		} else {
-			message = "당신은 왕이 아닙니다!"
-		}
-		sendPrivateMessage(s, v, message)
-	}
-
-	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseDeferredMessageUpdate,
-	})
-	if err != nil {
-		log.Println("Error responding to interaction:", err)
-		return
-	}
-
-	createFollowUpMessage(s, i)
 }
 
 func handleSelectMenu(s *discordgo.Session, i *discordgo.InteractionCreate) {

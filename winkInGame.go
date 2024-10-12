@@ -15,7 +15,7 @@ var (
 	messageIDMap      = make(map[string]string)
 )
 
-func followUpHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func winkFollowUpHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	userID := i.Member.User.ID
 	userGlobalName := i.Member.User.GlobalName
 	action := ""
@@ -109,7 +109,7 @@ func followUpHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 }
 
 // 버튼 포함 임베드 메시지 생성
-func createFollowUpMessage(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func winkFollowUpMessage(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	totalParticipants = len(selectedUsersMap[i.GuildID])
 
 	embed := &discordgo.MessageEmbed{
