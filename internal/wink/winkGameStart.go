@@ -32,7 +32,7 @@ func winkStartButton(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		} else {
 			message = "당신은 왕이 아닙니다!"
 		}
-		sendPrivateMessage(s, id, message)
+		discord.SendDM(s, id, message)
 	}
 
 	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{

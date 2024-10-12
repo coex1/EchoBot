@@ -1,4 +1,4 @@
-package main
+package wink
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func sendPrivateMessage(s *discordgo.Session, userID string, message string) {
+func SendPrivateMessage(s *discordgo.Session, userID string, message string) {
 	channel, err := s.UserChannelCreate(userID)
 	if err != nil {
 		fmt.Println("error creating channel:", err)

@@ -1,4 +1,4 @@
-package main
+package wink
 
 import (
 	"log"
@@ -12,7 +12,7 @@ var (
 	MaxValues        int
 )
 
-func selectUserHandler(s *discordgo.Session, i *discordgo.InteractionCreate, game string) {
+func SelectUserHandler(s *discordgo.Session, i *discordgo.InteractionCreate, game string) {
 	// 길드 멤버 가져오기
 	members, err := s.GuildMembers(i.GuildID, "", 25)
 	if err != nil {
@@ -81,7 +81,7 @@ func selectUserHandler(s *discordgo.Session, i *discordgo.InteractionCreate, gam
 	selectedUsersMap[i.GuildID] = make([]string, 0)
 }
 
-func handleSelectMenu(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func HandleSelectMenu(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	// Map 변수
 	selectedUsersMap[i.GuildID] = i.MessageComponentData().Values
 

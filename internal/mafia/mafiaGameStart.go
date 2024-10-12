@@ -49,7 +49,7 @@ func mafiaStartButton(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		} else {
 			message = "당신은 시민 입니다!"
 		}
-		sendPrivateMessage(s, id, message)
+		discord.SendDM(s, id, message)
 	}
 }
 
