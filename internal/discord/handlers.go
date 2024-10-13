@@ -10,6 +10,27 @@ import (
 	dgo "github.com/bwmarrin/discordgo"
 )
 
+var (
+	winkSelectedUsersMap = make(map[string][]string)
+	MafiaSelectedUsersMap = make(map[string][]string)
+	MinValues        int
+	MaxValues        int
+)
+
+func handleSelectMenu(s *dgo.Session, event *dgo.InteractionCreate) {
+	// Map 변수
+  // get currently selected users, and put values to selectedUsersMap
+	winkSelectedUsersMap[event.GuildID] = event.MessageComponentData().Values
+
+	err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
+		// 상호작용 지연
+		Type: dgo.InteractionResponseDeferredMessageUpdate,
+	})
+	if err != nil {
+		log.Println("Error responding to select menu interaction:", err)
+	}
+}
+
 // Ready event handler
 // handler for when logged into Discord Server via the Bot Token
 var readyEvent = func(s *dgo.Session, r *dgo.Ready) {
@@ -27,7 +48,7 @@ var interactionCreateEvent = func(s *dgo.Session, event *dgo.InteractionCreate) 
     case "wink":
       switch event.MessageComponentData().CustomID {
       case "user_select_menu":
-        wink.HandleSelectMenu(s, event) // handleSelectMenu
+        handleSelectMenu(s, event)
       case "start_button":
         wink.HandleStartButton(s, event) // winkStartButton
       case "check", "cancel":
@@ -36,7 +57,7 @@ var interactionCreateEvent = func(s *dgo.Session, event *dgo.InteractionCreate) 
     case "mafia":
       switch event.MessageComponentData().CustomID {
       case "user_select_menu":
-        mafia.handleSelectMenu(s, event)
+        handleSelectMenu(s, event)
       case "start_button":
         mafia.StartButton(s, event)
       }
