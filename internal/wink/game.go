@@ -16,12 +16,13 @@ import (
 )
 
 var (
+  // 윙크 받아서 버튼은 클릭 한 사용자들 
 	checkedUsers      = make(map[string]bool)
 	totalParticipants = 0
 	messageIDMap      = make(map[string]string)
 )
 
-func FollowUpHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func FollowUpHandler(s *dgo.Session, i *dgo.InteractionCreate) {
 	userID := i.Member.User.ID
 	userGlobalName := i.Member.User.GlobalName
 	action := ""
@@ -198,12 +199,6 @@ func winkStartButton(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	winkFollowUpMessage(s, i)
 }
-
-var (
-	checkedUsers      = make(map[string]bool)
-	totalParticipants = 0
-	messageIDMap      = make(map[string]string)
-)
 
 func winkFollowUpHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	userID := i.Member.User.ID

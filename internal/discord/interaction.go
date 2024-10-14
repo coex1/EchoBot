@@ -5,12 +5,6 @@ import (
 	"log"
 )
 
-// internal imports
-import (
-	"github.com/coex1/EchoBot/internal/wink"
-	"github.com/coex1/EchoBot/internal/mafia"
-)
-
 // external packages
 import (
 	dgo "github.com/bwmarrin/discordgo"
@@ -107,6 +101,7 @@ func winkCommandHandle(s *dgo.Session, event *dgo.InteractionCreate) {
   }
 
   // TODO: change from global variable to local
+  // reset selected users mapping
 	selectedUsersMap[event.GuildID] = make([]string, 0)
 }
 
@@ -185,5 +180,6 @@ func mafiaCommandHandle(s *dgo.Session, event *dgo.InteractionCreate) {
   }
 
   // TODO: change from global variable to local
+  // reset selected users mapping
 	selectedUsersMap[event.GuildID] = make([]string, 0)
 }
