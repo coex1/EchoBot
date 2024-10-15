@@ -1,4 +1,4 @@
-package discord
+package general
 
 // system packages
 import (
@@ -19,7 +19,7 @@ func CountCheckedUsers(m map[string]bool) int {
   return cnt
 }
 
-func contains(slice []string, value string) bool {
+func Contains(slice []string, value string) bool {
 	for _, v := range slice {
 		if v == value {
 			return true
@@ -36,7 +36,7 @@ func GetRandomUser(userList []string) string {
 	randomNumber := r.Intn(len(userList)) 
 
   // debug
-  log.Println("Selected random user: list[%d] = %s", randomNumber, userList[randomNumber])
+  log.Printf("Selected random user: list[%d] = %s\n", randomNumber, userList[randomNumber])
 
 	return userList[randomNumber]
 }

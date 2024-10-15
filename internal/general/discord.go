@@ -1,4 +1,4 @@
-package discord
+package general
 
 // system packages
 import (

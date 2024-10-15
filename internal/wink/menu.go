@@ -1,4 +1,4 @@
-package discord
+package wink
 
 // system packages
 import (
@@ -10,10 +10,19 @@ import (
 	"strings"
 )
 
+// internal packages
+import (
+  "github.com/coex1/EchoBot/internal/general"
+)
+
 // external packages
 import (
 	dgo "github.com/bwmarrin/discordgo"
 )
+
+const WINK_MIN_LIST_CNT = 2
+const MAX_MEMBER_GET int = 50
+const QUERY_STRING string = ""
 
 var (
   // 윙크 받아서 버튼은 클릭 한 사용자들 
@@ -23,10 +32,10 @@ var (
 	selectedUsersMap = make(map[string][]string)
 )
 
-func Wink_HandleSelectMenu(s *dgo.Session, event *dgo.InteractionCreate) {
+func HandleSelectMenu(s *dgo.Session, event *dgo.InteractionCreate) {
 	// Map 변수
   // get currently selected users, and put values to selectedUsersMap
-	winkSelectedUsersMap[event.GuildID] = event.MessageComponentData().Values
+	selectedUsersMap[event.GuildID] = event.MessageComponentData().Values
 
 	err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
 		// 상호작용 지연
@@ -37,7 +46,7 @@ func Wink_HandleSelectMenu(s *dgo.Session, event *dgo.InteractionCreate) {
 	}
 }
 
-func Wink_FollowUpHandler(s *dgo.Session, event *dgo.InteractionCreate) {
+func FollowUpHandler(s *dgo.Session, event *dgo.InteractionCreate) {
 	userID := event.Member.User.ID
 	userGlobalName := event.Member.User.GlobalName
 	action := ""
@@ -57,7 +66,7 @@ func Wink_FollowUpHandler(s *dgo.Session, event *dgo.InteractionCreate) {
 	}
 
 	// 현재 체크된 수 계산
-	checkedCount := CountCheckedUsers(checkedUsers)
+	checkedCount := general.CountCheckedUsers(checkedUsers)
 
 	// 기존 메시지 업데이트 (Followup 메시지 수정)
 	messageID := messageIDMap[event.GuildID]
@@ -130,7 +139,7 @@ func Wink_FollowUpHandler(s *dgo.Session, event *dgo.InteractionCreate) {
 	}
 }
 
-func Wink_FollowUpMessage(s *dgo.Session, i *dgo.InteractionCreate) {
+func FollowUpMessage(s *dgo.Session, i *dgo.InteractionCreate) {
 	totalParticipants = len(selectedUsersMap[i.GuildID])
 
 	embed := &dgo.MessageEmbed{
@@ -168,7 +177,7 @@ func Wink_FollowUpMessage(s *dgo.Session, i *dgo.InteractionCreate) {
 }
 
 // 버튼 포함 임베드 메시지 생성
-func Wink_CreateFollowUpMessage(s *dgo.Session, i *dgo.InteractionCreate) {
+func CreateFollowUpMessage(s *dgo.Session, i *dgo.InteractionCreate) {
 	totalParticipants = len(selectedUsersMap[i.GuildID])
 
 	embed := &dgo.MessageEmbed{
@@ -206,7 +215,7 @@ func Wink_CreateFollowUpMessage(s *dgo.Session, i *dgo.InteractionCreate) {
 }
 
 // Select 버튼이 눌렸을 때 선택된 멤버들을 처리하는 핸들러
-func Wink_HandleStartButton(s *dgo.Session, i *dgo.InteractionCreate) {
+func HandleStartButton(s *dgo.Session, i *dgo.InteractionCreate) {
 	// 선택된 멤버 ID 목록을 가져옴
 	tempSelectedMembers := selectedUsersMap[i.GuildID]
 	if len(tempSelectedMembers) == 0 {
@@ -228,7 +237,7 @@ func Wink_HandleStartButton(s *dgo.Session, i *dgo.InteractionCreate) {
 		} else {
 			message = "당신은 왕이 아닙니다!"
 		}
-	  SendDM(s, id, message)
+	  general.SendDM(s, id, message)
 	}
 
 	err := s.InteractionRespond(i.Interaction, &dgo.InteractionResponse{
@@ -239,5 +248,84 @@ func Wink_HandleStartButton(s *dgo.Session, i *dgo.InteractionCreate) {
 		return
 	}
 
-	Wink_FollowUpMessage(s, i)
+	FollowUpMessage(s, i)
+}
+
+func CommandHandle(s *dgo.Session, event *dgo.InteractionCreate) {
+	var optionList []dgo.SelectMenuOption
+  var minListCnt int = WINK_MIN_LIST_CNT
+  var maxListCnt int
+  var err error
+  var members []*dgo.Member
+
+  // get guild members
+	members, err = s.GuildMembers(event.GuildID, QUERY_STRING, MAX_MEMBER_GET)
+
+  // if getting members failed
+  if err != nil {
+    log.Fatalf("Failed getting members [%v]", err)
+    return
+  }
+
+  // create select list from 'members'
+	for _, m := range members {
+    // check if 'm' is a bot
+		if m.User.Bot {
+      continue
+		}
+
+    optionList = append(optionList, dgo.SelectMenuOption{
+      Label: m.User.GlobalName,
+      Value: m.User.ID,
+    })
+	}
+
+  // update max to match the updated 'optionList'
+	maxListCnt = len(optionList)
+
+  // configure select menu
+	selectMenu := dgo.SelectMenu{
+		CustomID:    "wink_user_select_menu",
+		Placeholder: "사용자를 선택해 주세요!",
+		MinValues:   &minListCnt,
+		MaxValues:   maxListCnt,
+		Options:     optionList,
+	}
+	actionRow := dgo.ActionsRow{
+		Components: []dgo.MessageComponent{
+			selectMenu,
+		},
+	}
+
+	// configure game start button
+	buttonRow := dgo.ActionsRow{
+		Components: []dgo.MessageComponent{
+			&dgo.Button{
+				Label:    "게임시작",         // 버튼 텍스트
+				Style:    dgo.PrimaryButton,  // 버튼 스타일
+				CustomID: "wink_start_button",     // 버튼 클릭 시 처리할 ID
+			},
+		},
+	}
+
+	// 드롭다운 메뉴와 버튼을 포함한 메시지 전송
+  err = s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
+    Type: dgo.InteractionResponseChannelMessageWithSource,
+    Data: &dgo.InteractionResponseData{
+      Components: []dgo.MessageComponent{
+        actionRow,
+        buttonRow,
+      },
+    },
+  })
+
+  // if response failed
+  if err != nil {
+    log.Fatalf("Failed to send response [%v]", err)
+    return
+  }
+
+  // TODO: change from global variable to local
+  // reset selected users mapping
+	selectedUsersMap[event.GuildID] = make([]string, 0)
 }

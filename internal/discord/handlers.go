@@ -5,16 +5,16 @@ import (
 	"log"
 )
 
+// internal package
+import (
+  "github.com/coex1/EchoBot/internal/wink"
+	"github.com/coex1/EchoBot/internal/mafia"
+)
+
 // external package
 import (
 	dgo "github.com/bwmarrin/discordgo"
 )
-
-var (
-	winkSelectedUsersMap = make(map[string][]string)
-	mafiaSelectedUsersMap = make(map[string][]string)
-)
-
 
 // Ready event handler
 // handler for when logged into Discord Server via the Bot Token
@@ -31,15 +31,15 @@ var interactionCreateEvent = func(s *dgo.Session, event *dgo.InteractionCreate) 
   case dgo.InteractionMessageComponent:
     switch event.MessageComponentData().CustomID {
     case "wink_user_select_menu":
-      Wink_HandleSelectMenu(s, event)
+      wink.HandleSelectMenu(s, event)
     case "wink_start_button":
-      Wink_HandleStartButton(s, event)
+      wink.HandleStartButton(s, event)
     case "wink_check", "wink_cancel":
-      Wink_FollowUpHandler(s, event)
+      wink.FollowUpHandler(s, event)
     case "mafia_user_select_menu":
-      Mafia_HandleSelectMenu(s, event)
+      mafia.HandleSelectMenu(s, event)
     case "mafia_start_button":
-      Mafia_HandleStartButton(s, event)
+      mafia.HandleStartButton(s, event)
     }
   }
 }
