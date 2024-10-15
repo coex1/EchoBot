@@ -5,31 +5,16 @@ import (
 	"log"
 )
 
-// external packages
+// external package
 import (
 	dgo "github.com/bwmarrin/discordgo"
 )
 
 var (
 	winkSelectedUsersMap = make(map[string][]string)
-	MafiaSelectedUsersMap = make(map[string][]string)
-	MinValues        int
-	MaxValues        int
+	mafiaSelectedUsersMap = make(map[string][]string)
 )
 
-func handleSelectMenu(s *dgo.Session, event *dgo.InteractionCreate) {
-	// Map 변수
-  // get currently selected users, and put values to selectedUsersMap
-	winkSelectedUsersMap[event.GuildID] = event.MessageComponentData().Values
-
-	err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
-		// 상호작용 지연
-		Type: dgo.InteractionResponseDeferredMessageUpdate,
-	})
-	if err != nil {
-		log.Println("Error responding to select menu interaction:", err)
-	}
-}
 
 // Ready event handler
 // handler for when logged into Discord Server via the Bot Token
@@ -44,23 +29,17 @@ var interactionCreateEvent = func(s *dgo.Session, event *dgo.InteractionCreate) 
   case dgo.InteractionApplicationCommand:
     handleApplicationCommand(s, event)
   case dgo.InteractionMessageComponent:
-    switch event.ApplicationCommandData().Name {
-    case "wink":
-      switch event.MessageComponentData().CustomID {
-      case "user_select_menu":
-        handleSelectMenu(s, event)
-      case "start_button":
-        wink.HandleStartButton(s, event) // winkStartButton
-      case "check", "cancel":
-        wink.FollowUpHandler(s, event) // winkFollowUpHandler
-      }
-    case "mafia":
-      switch event.MessageComponentData().CustomID {
-      case "user_select_menu":
-        handleSelectMenu(s, event)
-      case "start_button":
-        mafia.StartButton(s, event)
-      }
+    switch event.MessageComponentData().CustomID {
+    case "wink_user_select_menu":
+      Wink_HandleSelectMenu(s, event)
+    case "wink_start_button":
+      Wink_HandleStartButton(s, event)
+    case "wink_check", "wink_cancel":
+      Wink_FollowUpHandler(s, event)
+    case "mafia_user_select_menu":
+      Mafia_HandleSelectMenu(s, event)
+    case "mafia_start_button":
+      Mafia_HandleStartButton(s, event)
     }
   }
 }

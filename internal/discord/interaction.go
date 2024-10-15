@@ -12,21 +12,19 @@ import (
 
 const MAX_MEMBER_GET int = 50
 const QUERY_STRING string = ""
-const WINK_MIN_LIST_CNT = 3
+const WINK_MIN_LIST_CNT = 2
 const MAFIA_MIN_LIST_CNT = 3
-
-var selectedUsersMap = make(map[string][]string)
 
 func handleApplicationCommand(s *dgo.Session, event *dgo.InteractionCreate) {
   switch event.ApplicationCommandData().Name {
   case "wink":
-    winkCommandHandle(s, event)
+    Wink_CommandHandle(s, event)
   case "mafia":
     mafiaCommandHandle(s, event)
   }
 }
 
-func winkCommandHandle(s *dgo.Session, event *dgo.InteractionCreate) {
+func Wink_CommandHandle(s *dgo.Session, event *dgo.InteractionCreate) {
 	var optionList []dgo.SelectMenuOption
   var minListCnt int = WINK_MIN_LIST_CNT
   var maxListCnt int
@@ -60,7 +58,7 @@ func winkCommandHandle(s *dgo.Session, event *dgo.InteractionCreate) {
 
   // configure select menu
 	selectMenu := dgo.SelectMenu{
-		CustomID:    "user_select_menu",
+		CustomID:    "wink_user_select_menu",
 		Placeholder: "사용자를 선택해 주세요!",
 		MinValues:   &minListCnt,
 		MaxValues:   maxListCnt,
@@ -78,7 +76,7 @@ func winkCommandHandle(s *dgo.Session, event *dgo.InteractionCreate) {
 			&dgo.Button{
 				Label:    "게임시작",         // 버튼 텍스트
 				Style:    dgo.PrimaryButton,  // 버튼 스타일
-				CustomID: "start_button",     // 버튼 클릭 시 처리할 ID
+				CustomID: "wink_start_button",     // 버튼 클릭 시 처리할 ID
 			},
 		},
 	}
@@ -139,7 +137,7 @@ func mafiaCommandHandle(s *dgo.Session, event *dgo.InteractionCreate) {
 
 	// SelectMenu와 ActionRow 설정
   selectMenu := dgo.SelectMenu{
-    CustomID:    "user_select_menu",
+    CustomID:    "mafia_user_select_menu",
     Placeholder: "사용자를 선택해 주세요!",
     MinValues:   &minListCnt,
     MaxValues:   maxListCnt,
@@ -157,7 +155,7 @@ func mafiaCommandHandle(s *dgo.Session, event *dgo.InteractionCreate) {
 			&dgo.Button{
 				Label:    "시작",                    // 버튼 텍스트
 				Style:    dgo.PrimaryButton, // 버튼 스타일
-				CustomID: "start_button",          // 버튼 클릭 시 처리할 ID
+				CustomID: "mafia_start_button",          // 버튼 클릭 시 처리할 ID
 			},
 		},
 	}

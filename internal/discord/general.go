@@ -1,4 +1,4 @@
-package wink
+package discord
 
 // system packages
 import (
@@ -6,6 +6,27 @@ import (
 	"time"
 	"math/rand"
 )
+
+func CountCheckedUsers(m map[string]bool) int {
+  cnt := 0
+
+  for _, checked := range m {
+    if checked {
+      cnt++
+    }
+  }
+
+  return cnt
+}
+
+func contains(slice []string, value string) bool {
+	for _, v := range slice {
+		if v == value {
+			return true
+		}
+	}
+	return false
+}
 
 func GetRandomUser(userList []string) string {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))

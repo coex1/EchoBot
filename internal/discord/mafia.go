@@ -1,4 +1,4 @@
-package mafia
+package discord
 
 // system packages
 import (
@@ -7,17 +7,31 @@ import (
 	"time"
 )
 
-// internal imports
-import (
-	"github.com/coex1/EchoBot/internal/discord"
-)
-
-// external packages
+// external package
 import (
 	dgo "github.com/bwmarrin/discordgo"
 )
 
-func StartButton(s *dgo.Session, event *dgo.InteractionCreate) {
+var (
+  // 윙크 받아서 버튼은 클릭 한 사용자들 
+	MafiaSelectedUsersMap = make(map[string][]string)
+)
+
+func Mafia_HandleSelectMenu(s *dgo.Session, event *dgo.InteractionCreate) {
+	// Map 변수
+  // get currently selected users, and put values to selectedUsersMap
+	MafiaSelectedUsersMap[event.GuildID] = event.MessageComponentData().Values
+
+	err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
+		// 상호작용 지연
+		Type: dgo.InteractionResponseDeferredMessageUpdate,
+	})
+	if err != nil {
+		log.Println("Error responding to select menu interaction:", err)
+	}
+}
+
+func Mafia_HandleStartButton(s *dgo.Session, event *dgo.InteractionCreate) {
 	mafiaCount := event.ApplicationCommandData().Options[0].IntValue()
 	policeCount := event.ApplicationCommandData().Options[1].IntValue()
 	doctorCount := event.ApplicationCommandData().Options[2].IntValue()
@@ -58,15 +72,6 @@ func StartButton(s *dgo.Session, event *dgo.InteractionCreate) {
 		} else {
 			message = "당신은 시민 입니다!"
 		}
-		discord.SendDM(s, id, message)
+		SendDM(s, id, message)
 	}
-}
-
-func contains(slice []string, value string) bool {
-	for _, v := range slice {
-		if v == value {
-			return true
-		}
-	}
-	return false
 }
