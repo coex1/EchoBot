@@ -32,7 +32,7 @@ var (
 	selectedUsersMap = make(map[string][]string)
 )
 
-func HandleSelectMenu(s *dgo.Session, event *dgo.InteractionCreate) {
+func SelectMenu(s *dgo.Session, event *dgo.InteractionCreate) {
 	// Map 변수
   // get currently selected users, and put values to selectedUsersMap
 	selectedUsersMap[event.GuildID] = event.MessageComponentData().Values
@@ -215,7 +215,7 @@ func CreateFollowUpMessage(s *dgo.Session, i *dgo.InteractionCreate) {
 }
 
 // Select 버튼이 눌렸을 때 선택된 멤버들을 처리하는 핸들러
-func HandleStartButton(s *dgo.Session, i *dgo.InteractionCreate) {
+func StartButton(s *dgo.Session, i *dgo.InteractionCreate) {
 	// 선택된 멤버 ID 목록을 가져옴
 	tempSelectedMembers := selectedUsersMap[i.GuildID]
 	if len(tempSelectedMembers) == 0 {

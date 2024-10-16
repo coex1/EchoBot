@@ -26,7 +26,7 @@ var (
 	selectedUsersMap = make(map[string][]string)
 )
 
-func HandleSelectMenu(s *dgo.Session, event *dgo.InteractionCreate) {
+func SelectMenu(s *dgo.Session, event *dgo.InteractionCreate) {
 	// Map 변수
   // get currently selected users, and put values to selectedUsersMap
 	selectedUsersMap[event.GuildID] = event.MessageComponentData().Values
@@ -40,7 +40,7 @@ func HandleSelectMenu(s *dgo.Session, event *dgo.InteractionCreate) {
 	}
 }
 
-func HandleStartButton(s *dgo.Session, event *dgo.InteractionCreate) {
+func StartButton(s *dgo.Session, event *dgo.InteractionCreate) {
 	mafiaCount := event.ApplicationCommandData().Options[0].IntValue()
 	policeCount := event.ApplicationCommandData().Options[1].IntValue()
 	doctorCount := event.ApplicationCommandData().Options[2].IntValue()
