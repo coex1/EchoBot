@@ -9,6 +9,7 @@ import (
 // internal imports
 import (
 	"github.com/coex1/EchoBot/internal/discord"
+	"github.com/coex1/EchoBot/internal/data"
 )
 
 // external packages
@@ -21,6 +22,7 @@ var (
 	BotToken = flag.String("token", "", "")
 	GuildID  = flag.String("guild", "948807733199642645", "")
 	//RemoveCommands = flag.Bool("rmcmd", true, "Remove all commands after shutdowning or not")
+  guild = new(data.Guild) // TODO: need to be data array
 )
 
 // TODO: remove
@@ -45,7 +47,7 @@ func init() {
 }
 
 func main() {
-	discord.RegisterHandlers(discordSession)
+	discord.RegisterHandlers(discordSession, guild)
 
 	discord.Start(discordSession)
 	defer discord.Stop(discordSession)
