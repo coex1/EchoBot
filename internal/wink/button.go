@@ -1,24 +1,20 @@
 package wink
 
-// system packages
 import (
+  // system packages
 	"fmt"
 	"log"
 	"time"
 	"math/rand"
 	"strconv"
-	"strings"
-)
+  "strings"
 
-// internal packages
-import (
+  // internal packages
   "github.com/coex1/EchoBot/internal/general"
-	"github.com/coex1/EchoBot/internal/data"
-)
+  "github.com/coex1/EchoBot/internal/data"
 
-// external packages
-import (
-	dgo "github.com/bwmarrin/discordgo"
+  // external packages
+  dgo "github.com/bwmarrin/discordgo"
 )
 
 // Select 버튼이 눌렸을 때 선택된 멤버들을 처리하는 핸들러

@@ -1,15 +1,13 @@
 package discord
 
-// system packages
 import (
-	"log"
-	"os"
-	"os/signal"
-)
+  // system packages
+  "log"
+  "os"
+  "os/signal"
 
-// external packages
-import (
-	dgo "github.com/bwmarrin/discordgo"
+  // external packages
+  dgo "github.com/bwmarrin/discordgo"
 )
 
 // start a Discord server connection session

@@ -1,7 +1,7 @@
 package main
 
-// system packages
 import (
+  // system packages
 	"log"
 	"os"
 	"os/signal"

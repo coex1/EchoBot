@@ -1,29 +1,29 @@
 package discord
 
-// system packages
 import (
+  // system packages
 	"log"
 
-	"github.com/coex1/EchoBot/internal/data" // internal package
+  // internal package
+	"github.com/coex1/EchoBot/internal/data"
 	"github.com/coex1/EchoBot/internal/mafia"
 	"github.com/coex1/EchoBot/internal/wink"
 
-	// external package
-
+  // external package
 	dgo "github.com/bwmarrin/discordgo"
 )
-
-// InteractionCreate event handler
-// handler for all user interactions (even Commands!)
 
 // register handlers to 's' session variable
 func RegisterHandlers(s *dgo.Session, guild *data.Guild) {
 	log.Println("Registering event handlers...")
 
+  // Ready(login) event handler
 	s.AddHandler(func(s *dgo.Session, r *dgo.Ready) {
 		log.Printf("Login successful [%v#%v]", s.State.User.Username, s.State.User.Discriminator)
 	})
 
+  // InteractionCreate event handler
+  // handler for all user interactions (even Commands!)
 	s.AddHandler(func(s *dgo.Session, event *dgo.InteractionCreate) {
 		switch event.Type {
 		case dgo.InteractionApplicationCommand:

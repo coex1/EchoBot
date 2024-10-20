@@ -1,19 +1,15 @@
 package main
 
-// system packages
 import (
-	"log"
-)
+  // system packages
+  "log"
 
-// internal imports
-import (
-	"github.com/coex1/EchoBot/internal/discord"
-	"github.com/coex1/EchoBot/internal/data"
-)
+  // internal imports
+  "github.com/coex1/EchoBot/internal/discord"
+  "github.com/coex1/EchoBot/internal/data"
 
-// external packages
-import (
-	dgo "github.com/bwmarrin/discordgo"
+  // external packages
+  dgo "github.com/bwmarrin/discordgo"
 )
 
 // bot configuration values read from file

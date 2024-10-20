@@ -1,13 +1,11 @@
 package general
 
-// system packages
 import (
+  // system packages
 	"log"
-)
 
-// external packages
-import (
-	dgo "github.com/bwmarrin/discordgo"
+  // external packages
+  dgo "github.com/bwmarrin/discordgo"
 )
 
 // send a DM(Direct Message) to the user

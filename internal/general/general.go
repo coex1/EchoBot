@@ -1,7 +1,7 @@
 package general
 
-// system packages
 import (
+  // system packages
 	"log"
 	"time"
 	"math/rand"

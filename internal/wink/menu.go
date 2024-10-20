@@ -1,18 +1,14 @@
 package wink
 
-// system packages
 import (
+  // system packages
 	"log"
-)
 
-// internal packages
-import (
-	"github.com/coex1/EchoBot/internal/data"
-)
+  // internal packages
+  "github.com/coex1/EchoBot/internal/data"
 
-// external packages
-import (
-	dgo "github.com/bwmarrin/discordgo"
+  // external packages
+  dgo "github.com/bwmarrin/discordgo"
 )
 
 func SelectListUpdate(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Guild) {

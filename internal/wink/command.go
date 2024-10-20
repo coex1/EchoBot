@@ -1,19 +1,15 @@
 package wink
 
-// system packages
 import (
-	"log"
+  // system packages
+  "log"
 
-	"github.com/coex1/EchoBot/internal/data" // internal packages
+  // internal packages
+  "github.com/coex1/EchoBot/internal/data"
 
-	// external packages
-
-	dgo "github.com/bwmarrin/discordgo"
+  // external packages
+  dgo "github.com/bwmarrin/discordgo"
 )
-
-const WINK_MIN_LIST_CNT = 2 // TODO: update to 3
-const MAX_MEMBER_GET int = 50
-const QUERY_STRING string = ""
 
 func CommandHandle(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Guild) {
 	var optionList []dgo.SelectMenuOption
@@ -28,7 +24,7 @@ func CommandHandle(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Gui
 	guild.Wink.SelectedUsersMap = make(map[string][]string)
 
 	// get guild members
-	members, err = s.GuildMembers(event.GuildID, QUERY_STRING, MAX_MEMBER_GET)
+	members, err = s.GuildMembers(event.GuildID, WINK_QUERY_STRING, WINK_MAX_MEMBER_GET)
 
 	// if getting members failed
 	if err != nil {

@@ -1,13 +1,11 @@
 package discord
 
-// system packages
 import (
-	"log"
-)
+  // system packages
+  "log"
 
-// external packages
-import (
-	dgo "github.com/bwmarrin/discordgo"
+  // external packages
+  dgo "github.com/bwmarrin/discordgo"
 )
 
 // list of commands this bot will register
