@@ -1,31 +1,24 @@
-package wink
+package mafia
 
-// system packages
 import (
+	// system packages
 	"log"
 
-	"github.com/coex1/EchoBot/internal/data" // internal packages
+	// internal packages
+	"github.com/coex1/EchoBot/internal/data"
 
 	// external packages
-
 	dgo "github.com/bwmarrin/discordgo"
 )
 
-const WINK_MIN_LIST_CNT = 2 // TODO: update to 3
-const MAX_MEMBER_GET int = 50
-const QUERY_STRING string = ""
-
 func CommandHandle(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Guild) {
 	var optionList []dgo.SelectMenuOption
-	var minListCnt int = WINK_MIN_LIST_CNT
+	var minListCnt int = MAFIA_MIN_LIST_CNT
 	var maxListCnt int
 	var err error
 	var members []*dgo.Member
 
-	guild.Wink.CheckedUsers = make(map[string]bool)
-	guild.Wink.TotalParticipants = 0
-	guild.Wink.MessageIDMap = make(map[string]string)
-	guild.Wink.SelectedUsersMap = make(map[string][]string)
+	guild.Mafia.SelectedUsersMap = make(map[string][]string)
 
 	// get guild members
 	members, err = s.GuildMembers(event.GuildID, QUERY_STRING, MAX_MEMBER_GET)
@@ -52,9 +45,9 @@ func CommandHandle(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Gui
 	// update max to match the updated 'optionList'
 	maxListCnt = len(optionList)
 
-	// configure select menu
+	// SelectMenu와 ActionRow 설정
 	selectMenu := dgo.SelectMenu{
-		CustomID:    "wink_select_list_update",
+		CustomID:    "mafia_user_select_menu",
 		Placeholder: "사용자를 선택해 주세요!",
 		MinValues:   &minListCnt,
 		MaxValues:   maxListCnt,
@@ -66,13 +59,13 @@ func CommandHandle(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Gui
 		},
 	}
 
-	// configure game start button
+	// start_button
 	buttonRow := dgo.ActionsRow{
 		Components: []dgo.MessageComponent{
 			&dgo.Button{
-				Label:    "게임시작",              // 버튼 텍스트
-				Style:    dgo.PrimaryButton,   // 버튼 스타일
-				CustomID: "wink_start_button", // 버튼 클릭 시 처리할 ID
+				Label:    "시작",                 // 버튼 텍스트
+				Style:    dgo.PrimaryButton,    // 버튼 스타일
+				CustomID: "mafia_start_button", // 버튼 클릭 시 처리할 ID
 			},
 		},
 	}
@@ -96,5 +89,5 @@ func CommandHandle(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Gui
 
 	// TODO: change from global variable to local
 	// reset selected users mapping
-	guild.Wink.SelectedUsersMap[event.GuildID] = make([]string, 0)
+	guild.Mafia.SelectedUsersMap[event.GuildID] = make([]string, 0)
 }
