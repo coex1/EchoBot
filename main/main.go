@@ -2,7 +2,6 @@ package main
 
 // system packages
 import (
-	"flag"
 	"log"
 )
 
@@ -17,19 +16,10 @@ import (
 	dgo "github.com/bwmarrin/discordgo"
 )
 
-// TODO: remove
-var (
-	BotToken = flag.String("token", "", "")
-	GuildID  = flag.String("guild", "948807733199642645", "")
-	//RemoveCommands = flag.Bool("rmcmd", true, "Remove all commands after shutdowning or not")
-  guild = new(data.Guild) // TODO: need to be data array
-)
-
-// TODO: remove
-func init() {
-	flag.Parse()
-}
-
+// bot configuration values read from file
+var config Config
+// global running-data holding struct variable
+var guild *data.Guild
 // all information regarding the connection to Discord Server
 var discordSession *dgo.Session
 
@@ -37,8 +27,14 @@ var discordSession *dgo.Session
 func init() {
 	var e error
 
-	// TODO: change BotToken type to just string, not string pointer
-	discordSession, e = dgo.New("Bot " + *BotToken)
+  // get configuration value
+  GetBotConfiguration(&config)
+
+  // create running data
+  guild = new(data.Guild) // TODO: need to be data array, to hold multiple guilds
+
+  // create a new session, and initialize it with the BotTokenKey
+	discordSession, e = dgo.New("Bot " + config.BotTokenKey)
 
 	// if error is found
 	if e != nil {
@@ -52,9 +48,9 @@ func main() {
 	discord.Start(discordSession)
 	defer discord.Stop(discordSession)
 
-	discord.RegisterCommands(discordSession, *GuildID)
+	discord.RegisterCommands(discordSession, config.GuildID)
 
 	WaitOnInterrupt()
 
-	discord.RemoveCommands(discordSession, *GuildID)
+	discord.RemoveCommands(discordSession, config.GuildID)
 }
