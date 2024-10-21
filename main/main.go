@@ -28,6 +28,7 @@ func init() {
 
   // create running data
   guild = new(data.Guild) // TODO: need to be data array, to hold multiple guilds
+  data.Initialize(guild)
 
   // create a new session, and initialize it with the BotTokenKey
 	discordSession, e = dgo.New("Bot " + config.BotTokenKey)

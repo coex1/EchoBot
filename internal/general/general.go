@@ -28,15 +28,19 @@ func Contains(slice []string, value string) bool {
 	return false
 }
 
-func GetRandomUser(userList []string) string {
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+// TODO: test
+func Random(min int, max int) (r int) {
+  if min > max {
+    return -1
+  }
 
-	// Generate a random number between 0 and 100
-  // Intn(n) returns a random integer from 0 to n-1, so 101 gives 0 to 100
-	randomNumber := r.Intn(len(userList)) 
+	random := rand.New(rand.NewSource(time.Now().UnixNano()))
 
-  // debug
-  log.Printf("Selected random user: list[%d] = %s\n", randomNumber, userList[randomNumber])
+  // Intn(n) -> (0 to n-1),
+  // Ex: 101 gives 0 to 100
+	r = random.Intn(max - min + 1) + min
 
-	return userList[randomNumber]
+  log.Printf("Random number: [%d]\n", r)
+
+  return
 }

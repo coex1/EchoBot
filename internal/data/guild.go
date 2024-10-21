@@ -7,3 +7,7 @@ type Guild struct {
 	Wink
 	Mafia
 }
+
+func Initialize(g *Guild){
+  g.Wink.SelectedUsers = make(map[string][]string)
+}

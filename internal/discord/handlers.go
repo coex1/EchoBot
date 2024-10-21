@@ -35,10 +35,11 @@ func RegisterHandlers(s *dgo.Session, guild *data.Guild) {
 			}
 		case dgo.InteractionMessageComponent:
 			switch event.MessageComponentData().CustomID {
-			case "wink_select_list_update":
-				wink.SelectListUpdate(s, event, guild)
-			case "wink_start_button":
-				wink.StartButton(s, event, guild)
+			case "wink_Start_listUpdate":
+				wink.Start_listUpdate(s, event, guild)
+			case "wink_Start_Button":
+				wink.Start_Button(s, event, guild)
+
 			case "wink_check", "wink_cancel":
 				wink.FollowUpHandler(s, event, guild)
 			case "mafia_select_menu":

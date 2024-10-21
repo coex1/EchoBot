@@ -4,8 +4,6 @@ import (
   // system packages
 	"fmt"
 	"log"
-	"time"
-	"math/rand"
 	"strconv"
   "strings"
 
@@ -17,32 +15,34 @@ import (
   dgo "github.com/bwmarrin/discordgo"
 )
 
-// Select 버튼이 눌렸을 때 선택된 멤버들을 처리하는 핸들러
-func StartButton(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
-	// 선택된 멤버 ID 목록을 가져옴
-	tempSelectedMembers := guild.Wink.SelectedUsersMap[i.GuildID]
-	if len(tempSelectedMembers) == 0 {
-		log.Println("No members selected.")
-		return
-	}
+// Starting Menu Button
+var start_buttonRow dgo.ActionsRow = dgo.ActionsRow{
+  Components: []dgo.MessageComponent{
+    &dgo.Button{
+      Label:    "게임시작",          // 버튼 텍스트
+      Style:    dgo.PrimaryButton,   // 버튼 스타일
+      CustomID: "wink_start_button", // 버튼 클릭 시 처리할 ID
+    },
+  },
+}
 
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	// Generate a random number between 0 and 100
-	randomNumber := r.Intn(len(tempSelectedMembers)) // Intn(n) returns a random integer from 0 to n-1, so 101 gives 0 to 100
-	fmt.Println(randomNumber)                        // Print the random number
+// on interaction event 'wink_Start_Button'
+func Start_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
+  // check if player count is valid
+  players := guild.Wink.SelectedUsers[i.GuildID]
+  if len(players) <= MIN_PLAYER_CNT {
+    log.Printf("Invalid player count!")
+    //  TODO: send error message as interaction respond!!!
+    return
+  }
 
-	king := tempSelectedMembers[randomNumber]
+  // select king
+  kingID := selectKing(players)
 
-	var message string
-	for _, id := range tempSelectedMembers {
-		if id == king {
-			message = "당신은 왕 입니다!"
-		} else {
-			message = "당신은 왕이 아닙니다!"
-		}
-	  general.SendDM(s, id, message)
-	}
+  // send role notice via private DM
+  sendRoleNotice(s, players, kingID)
 
+  // send response? why?
 	err := s.InteractionRespond(i.Interaction, &dgo.InteractionResponse{
 		Type: dgo.InteractionResponseDeferredMessageUpdate,
 	})
@@ -51,6 +51,8 @@ func StartButton(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
 		return
 	}
 
+  // send follow-up message
+  // what message?
 	FollowUpMessage(s, i, guild)
 }
 
@@ -85,7 +87,7 @@ func FollowUpHandler(s *dgo.Session, event *dgo.InteractionCreate, guild *data.G
 
 	// 체크된 유저 및 체크되지 않은 유저 목록 생성
 	var List, uncheckedUsersList string
-	for _, id := range guild.Wink.SelectedUsersMap[event.GuildID] {
+	for _, id := range guild.Wink.SelectedUsers[event.GuildID] {
 		// 유저 정보를 가져오기
 		member, err := s.GuildMember(event.GuildID, id)
 		if err != nil {
@@ -148,7 +150,7 @@ func FollowUpHandler(s *dgo.Session, event *dgo.InteractionCreate, guild *data.G
 }
 
 func FollowUpMessage(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
-	guild.Wink.TotalParticipants = len(guild.Wink.SelectedUsersMap[i.GuildID])
+	guild.Wink.TotalParticipants = len(guild.Wink.SelectedUsers[i.GuildID])
 
 	embed := &dgo.MessageEmbed{
 		Title:       "게임 시작!",
@@ -185,7 +187,7 @@ func FollowUpMessage(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild
 }
 // 버튼 포함 임베드 메시지 생성
 func CreateFollowUpMessage(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
-	guild.Wink.TotalParticipants = len(guild.Wink.SelectedUsersMap[i.GuildID])
+	guild.Wink.TotalParticipants = len(guild.Wink.SelectedUsers[i.GuildID])
 
 	embed := &dgo.MessageEmbed{
 		Title:       "게임 시작!",

@@ -11,22 +11,23 @@ import (
   dgo "github.com/bwmarrin/discordgo"
 )
 
+
 func CommandHandle(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Guild) {
-	var optionList []dgo.SelectMenuOption
-	var minListCnt int = WINK_MIN_LIST_CNT
-	var maxListCnt int
+	var minListCnt int = MIN_PLAYER_CNT
 	var err error
+	var optionList []dgo.SelectMenuOption
 	var members []*dgo.Member
+
+	guild.Wink.SelectedUsers[event.GuildID] = make([]string, 0)
 
 	guild.Wink.CheckedUsers = make(map[string]bool)
 	guild.Wink.TotalParticipants = 0
 	guild.Wink.MessageIDMap = make(map[string]string)
-	guild.Wink.SelectedUsersMap = make(map[string][]string)
+
+  log.Printf("Starting command handler\n")
 
 	// get guild members
-	members, err = s.GuildMembers(event.GuildID, WINK_QUERY_STRING, WINK_MAX_MEMBER_GET)
-
-	// if getting members failed
+	members, err = s.GuildMembers(event.GuildID, QUERY_STRING, MAX_MEMBER_GET)
 	if err != nil {
 		log.Fatalf("Failed getting members [%v]", err)
 		return
@@ -45,52 +46,28 @@ func CommandHandle(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Gui
 		})
 	}
 
-	// update max to match the updated 'optionList'
-	maxListCnt = len(optionList)
+  start_selectMenu.MinValues = &minListCnt
+  start_selectMenu.MaxValues = len(optionList)
+  start_selectMenu.Options = optionList
 
-	// configure select menu
-	selectMenu := dgo.SelectMenu{
-		CustomID:    "wink_select_list_update",
-		Placeholder: "사용자를 선택해 주세요!",
-		MinValues:   &minListCnt,
-		MaxValues:   maxListCnt,
-		Options:     optionList,
-	}
-	actionRow := dgo.ActionsRow{
-		Components: []dgo.MessageComponent{
-			selectMenu,
-		},
-	}
-
-	// configure game start button
-	buttonRow := dgo.ActionsRow{
-		Components: []dgo.MessageComponent{
-			&dgo.Button{
-				Label:    "게임시작",              // 버튼 텍스트
-				Style:    dgo.PrimaryButton,   // 버튼 스타일
-				CustomID: "wink_start_button", // 버튼 클릭 시 처리할 ID
-			},
-		},
-	}
-
-	// 드롭다운 메뉴와 버튼을 포함한 메시지 전송
+  // respond to command by sending Start Menu
 	err = s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
 		Type: dgo.InteractionResponseChannelMessageWithSource,
 		Data: &dgo.InteractionResponseData{
 			Components: []dgo.MessageComponent{
-				actionRow,
-				buttonRow,
+        dgo.ActionsRow{
+          Components: []dgo.MessageComponent{
+            start_selectMenu,
+          },
+        },
+				start_buttonRow,
 			},
 		},
 	})
-
-	// if response failed
 	if err != nil {
 		log.Fatalf("Failed to send response [%v]", err)
 		return
 	}
 
-	// TODO: change from global variable to local
-	// reset selected users mapping
-	guild.Wink.SelectedUsersMap[event.GuildID] = make([]string, 0)
+  log.Printf("Finished command handler\n")
 }
