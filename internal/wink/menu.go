@@ -13,7 +13,7 @@ import (
 
 // Start
 var start_selectMenu dgo.SelectMenu = dgo.SelectMenu{
-  CustomID:    "wink_select_list_update",
+  CustomID:    "wink_Start_listUpdate",
   Placeholder: "사용자를 선택해 주세요!",
 }
 

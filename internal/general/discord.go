@@ -23,5 +23,8 @@ func SendDM(s *dgo.Session, userID string, msg string) {
   // check if sending a DM failed
   if e != nil {
     log.Printf("Failed sending DM [%v]", e)
+    return
   }
+
+  log.Printf("Send message [%s] to user [%s]", msg, userID)
 }

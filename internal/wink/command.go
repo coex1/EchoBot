@@ -24,8 +24,6 @@ func CommandHandle(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Gui
 	guild.Wink.TotalParticipants = 0
 	guild.Wink.MessageIDMap = make(map[string]string)
 
-  log.Printf("Starting command handler\n")
-
 	// get guild members
 	members, err = s.GuildMembers(event.GuildID, QUERY_STRING, MAX_MEMBER_GET)
 	if err != nil {
@@ -68,6 +66,4 @@ func CommandHandle(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Gui
 		log.Fatalf("Failed to send response [%v]", err)
 		return
 	}
-
-  log.Printf("Finished command handler\n")
 }

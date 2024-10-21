@@ -21,7 +21,7 @@ var start_buttonRow dgo.ActionsRow = dgo.ActionsRow{
     &dgo.Button{
       Label:    "게임시작",          // 버튼 텍스트
       Style:    dgo.PrimaryButton,   // 버튼 스타일
-      CustomID: "wink_start_button", // 버튼 클릭 시 처리할 ID
+      CustomID: "wink_Start_Button", // 버튼 클릭 시 처리할 ID
     },
   },
 }
@@ -30,7 +30,7 @@ var start_buttonRow dgo.ActionsRow = dgo.ActionsRow{
 func Start_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
   // check if player count is valid
   players := guild.Wink.SelectedUsers[i.GuildID]
-  if len(players) <= MIN_PLAYER_CNT {
+  if len(players) < MIN_PLAYER_CNT {
     log.Printf("Invalid player count!")
     //  TODO: send error message as interaction respond!!!
     return

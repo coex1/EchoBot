@@ -15,12 +15,6 @@ import (
 func selectKing(players []string) (kingID string){
 	kingID = players[general.Random(0, len(players)-1)]
   log.Printf("Selected king! [%s]", kingID)
-
-  // TODO: delete after test
-  for i := 0; i < 100; i++ {
-    log.Printf("test Random()", general.Random(1, 10)) 
-  }
-
   return
 }
 

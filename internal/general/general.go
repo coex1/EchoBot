@@ -2,7 +2,6 @@ package general
 
 import (
   // system packages
-	"log"
 	"time"
 	"math/rand"
 )
@@ -28,7 +27,7 @@ func Contains(slice []string, value string) bool {
 	return false
 }
 
-// TODO: test
+// return a random number between 'min' and 'max'
 func Random(min int, max int) (r int) {
   if min > max {
     return -1
@@ -39,8 +38,6 @@ func Random(min int, max int) (r int) {
   // Intn(n) -> (0 to n-1),
   // Ex: 101 gives 0 to 100
 	r = random.Intn(max - min + 1) + min
-
-  log.Printf("Random number: [%d]\n", r)
 
   return
 }
