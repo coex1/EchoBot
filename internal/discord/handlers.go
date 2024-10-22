@@ -45,6 +45,18 @@ func RegisterHandlers(s *dgo.Session, guild *data.Guild) {
         log.Printf("Finished 'wink_Start_listUpdate' handle")
 			case "wink_Start_Button":
         log.Printf("Starting 'wink_Start_Button' handle")
+
+        // send response that event has been received and was acknowledged
+        err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
+          // Acknowledge that the event has been received,
+          // and will be updating the previous message later
+          Type: dgo.InteractionResponseDeferredMessageUpdate,
+        })
+        if err != nil {
+          log.Printf("Responsne to interaction failed [%v]", err)
+          return
+        }
+
 				wink.Start_Button(s, event, guild)
         log.Printf("Finished 'wink_Start_Button' handle")
 

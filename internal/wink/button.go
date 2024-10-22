@@ -32,9 +32,11 @@ func Start_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
   players := guild.Wink.SelectedUsers[i.GuildID]
   if len(players) < MIN_PLAYER_CNT {
     log.Printf("Invalid player count!")
-    //  TODO: send error message as interaction respond!!!
+    // update menu to show 'failed' message
+    Start_Failed(s, i, guild)
     return
   }
+	guild.Wink.TotalParticipants = len(players)
 
   // select king
   kingID := selectKing(players)
@@ -42,19 +44,11 @@ func Start_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
   // send role notice via private DM
   sendRoleNotice(s, players, kingID)
 
-  // send response? why?
-	err := s.InteractionRespond(i.Interaction, &dgo.InteractionResponse{
-		Type: dgo.InteractionResponseDeferredMessageUpdate,
-	})
-	if err != nil {
-		log.Println("Error responding to interaction:", err)
-		return
-	}
 
-  // send follow-up message
-  // what message?
-	FollowUpMessage(s, i, guild)
+  // update menu to show 'success' message
+	Start_Success(s, i, guild)
 }
+
 
 func FollowUpHandler(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Guild) {
 	userID := event.Member.User.ID
@@ -149,42 +143,6 @@ func FollowUpHandler(s *dgo.Session, event *dgo.InteractionCreate, guild *data.G
 	}
 }
 
-func FollowUpMessage(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
-	guild.Wink.TotalParticipants = len(guild.Wink.SelectedUsers[i.GuildID])
-
-	embed := &dgo.MessageEmbed{
-		Title:       "게임 시작!",
-		Description: "윙크를 받으셨으면 V 버튼을 클릭 해 주세요!\n\n실수로 V 했을 경우 X 버튼으로 취소 해 주세요!\n\n**현재 윙크 받은 사람 수 :** 0 / " + strconv.Itoa(guild.Wink.TotalParticipants),
-		Color:       0x00ff00,
-	}
-
-	components := []dgo.MessageComponent{
-		dgo.ActionsRow{
-			Components: []dgo.MessageComponent{
-				&dgo.Button{
-					Label:    "V",
-					Style:    dgo.SuccessButton,
-					CustomID: "wink_check",
-				},
-				&dgo.Button{
-					Label:    "X",
-					Style:    dgo.DangerButton,
-					CustomID: "wink_cancel",
-				},
-			},
-		},
-	}
-
-	msg, err := s.FollowupMessageCreate(i.Interaction, true, &dgo.WebhookParams{
-		Embeds:     []*dgo.MessageEmbed{embed},
-		Components: components,
-	})
-	if err != nil {
-		log.Println("Error sending follow-up message:", err)
-	}
-
-	guild.Wink.MessageIDMap[i.GuildID] = msg.ID
-}
 // 버튼 포함 임베드 메시지 생성
 func CreateFollowUpMessage(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
 	guild.Wink.TotalParticipants = len(guild.Wink.SelectedUsers[i.GuildID])

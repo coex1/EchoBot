@@ -26,5 +26,5 @@ func SendDM(s *dgo.Session, userID string, msg string) {
     return
   }
 
-  log.Printf("Send message [%s] to user [%s]", msg, userID)
+  log.Printf("Sent message to user [%s]", userID)
 }
