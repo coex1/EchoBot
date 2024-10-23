@@ -15,25 +15,13 @@ import (
   dgo "github.com/bwmarrin/discordgo"
 )
 
-// Starting Menu Button
-var start_buttonRow dgo.ActionsRow = dgo.ActionsRow{
-  Components: []dgo.MessageComponent{
-    &dgo.Button{
-      Label:    "게임시작",          // 버튼 텍스트
-      Style:    dgo.PrimaryButton,   // 버튼 스타일
-      CustomID: "wink_Start_Button", // 버튼 클릭 시 처리할 ID
-    },
-  },
-}
-
 // on interaction event 'wink_Start_Button'
 func Start_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
   // check if player count is valid
   players := guild.Wink.SelectedUsers[i.GuildID]
   if len(players) < MIN_PLAYER_CNT {
-    log.Printf("Invalid player count!")
-    // update menu to show 'failed' message
-    Start_Failed(s, i, guild)
+    log.Printf("Invalid player count, ending game")
+    Start_Failed(s, i, guild, "인원수가 부족")
     return
   }
 	guild.Wink.TotalParticipants = len(players)
@@ -42,12 +30,24 @@ func Start_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
   kingID := selectKing(players)
 
   // send role notice via private DM
-  sendRoleNotice(s, players, kingID)
+  sendPlayersStartMessage(s, players, kingID)
 
-
-  // update menu to show 'success' message
-	Start_Success(s, i, guild)
+  // send FollowUp message
+  Game_FollowUpMessage(s, i, guild)
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 func FollowUpHandler(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Guild) {

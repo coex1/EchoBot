@@ -44,24 +44,45 @@ func CommandHandle(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Gui
 		})
 	}
 
-  start_selectMenu.MinValues = &minListCnt
-  start_selectMenu.MaxValues = len(optionList)
-  start_selectMenu.Options = optionList
-
-  // respond to command by sending Start Menu
-	err = s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
+  response := &dgo.InteractionResponse{
 		Type: dgo.InteractionResponseChannelMessageWithSource,
 		Data: &dgo.InteractionResponseData{
+      Embeds: []*dgo.MessageEmbed{ 
+        {
+          Title:        "게임 참여자 선택!",
+          Description:  "게임에 참석할 사용자들을 선택해 주세요."+
+                        "\n최소 5명 이상이 선택 되어야 게임이 가능합니다."+
+                        "\n선택 하셨으면 '게임시작' 버튼을 클릭 해 주세요.",
+          Color:        0x2AFF00,
+        },
+      },
 			Components: []dgo.MessageComponent{
         dgo.ActionsRow{
           Components: []dgo.MessageComponent{
-            start_selectMenu,
+            dgo.SelectMenu{
+              CustomID:     "wink_Start_listUpdate",
+              Placeholder:  "사용자 목록",
+              MinValues:    &minListCnt,
+              MaxValues:    len(optionList),
+              Options:      optionList,
+            },
           },
         },
-				start_buttonRow,
+        dgo.ActionsRow{
+          Components: []dgo.MessageComponent{
+            &dgo.Button{
+              Label:    "게임시작",          // 버튼 텍스트
+              Style:    dgo.PrimaryButton,   // 버튼 스타일
+              CustomID: "wink_Start_Button", // 버튼 클릭 시 처리할 ID
+            },
+          },
+        },
 			},
 		},
-	})
+	}
+
+  // respond to command by sending Start Menu
+	err = s.InteractionRespond(event.Interaction, response)
 	if err != nil {
 		log.Fatalf("Failed to send response [%v]", err)
 		return
