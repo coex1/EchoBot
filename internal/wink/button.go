@@ -30,7 +30,7 @@ func Start_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
   kingID := selectKing(players)
 
   // send role notice via private DM
-  sendPlayersStartMessage(s, players, kingID)
+  sendPlayersStartMessage(s, i, guild, players, kingID)
 
   // send FollowUp message
   Game_FollowUpMessage(s, i, guild)

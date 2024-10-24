@@ -69,6 +69,11 @@ func RegisterHandlers(s *dgo.Session, guild *data.Guild) {
 				wink.FollowUpHandler(s, event, guild)
         log.Printf("Finished 'wink_cancel' handle")
 
+      case "wink_user_check":
+        log.Printf("testing 111111111111")
+      case "wink_user_cancel":
+        log.Printf("testing 2222222222222")
+
 			case "mafia_select_menu":
 				mafia.SelectMenu(s, event, guild)
 			case "mafia_start_button":

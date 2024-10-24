@@ -21,7 +21,7 @@ func selectKing(players []string) (kingID string){
 }
 
 // 역할 공지 및 선택 메뉴!
-func sendPlayersStartMessage(s *dgo.Session, players []string, kingID string) {
+func sendPlayersStartMessage(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild, players []string, kingID string) {
   // send select menu and confirm button to all users
   /*
   type MessageSend struct {
@@ -63,6 +63,24 @@ func sendPlayersStartMessage(s *dgo.Session, players []string, kingID string) {
                   "(폰을 계속 보고 있으면 뻔히 왕이 아닌것을 알게 되니....^^;)\n",
     Color:        0XC87C00,
   }
+
+	//var optionList []dgo.SelectMenuOption
+  //optionList := guild.SelectedUsers[i.GuildID]
+
+	// create select list from 'members'
+	//for _, m := range members {
+	//	// check if 'm' is a bot
+	//	if m.User.Bot {
+	//		continue
+	//	}
+
+	//	optionList = append(optionList, dgo.SelectMenuOption{
+	//		Label: m.User.GlobalName,
+	//		Value: m.User.ID,
+	//	})
+	//}
+  //var minVal int = 1
+  //var maxVal int = 1
   
   data := dgo.MessageSend{
     Components: []dgo.MessageComponent{
@@ -72,8 +90,8 @@ func sendPlayersStartMessage(s *dgo.Session, players []string, kingID string) {
           dgo.SelectMenu{
             CustomID:     "wink_Start_listUpdate",
             Placeholder:  "사용자 목록",
-            MinValues:    &minListCnt,
-            MaxValues:    len(optionList),
+            MinValues:    &minVal,
+            MaxValues:    maxVal,
             Options:      optionList,
           },
         },
@@ -84,12 +102,12 @@ func sendPlayersStartMessage(s *dgo.Session, players []string, kingID string) {
           &dgo.Button{
             Label:    "V",
             Style:    dgo.SuccessButton,
-            CustomID: "wink_check",
+            CustomID: "wink_user_check",
           },
           &dgo.Button{
             Label:    "X",
             Style:    dgo.DangerButton,
-            CustomID: "wink_cancel",
+            CustomID: "wink_user_cancel",
           },
         },
       },
