@@ -15,14 +15,17 @@ import (
 func CommandHandle(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Guild) {
 	var minListCnt int = MIN_PLAYER_CNT
 	var err error
-	var optionList []dgo.SelectMenuOption
 	var members []*dgo.Member
 
-	guild.Wink.SelectedUsers[event.GuildID] = make([]string, 0)
+  // RESET
+	guild.Wink.SelectedUsersID = make([]string, 0)
+	guild.Wink.AllUserInfo = make([]dgo.SelectMenuOption, 0)
+	guild.Wink.SelectedUsersInfo = make([]dgo.SelectMenuOption, 0)
 
 	guild.Wink.CheckedUsers = make(map[string]bool)
 	guild.Wink.TotalParticipants = 0
 	guild.Wink.MessageIDMap = make(map[string]string)
+  guild.Wink.UserSelection = make(map[string]string)
 
 	// get guild members
 	members, err = s.GuildMembers(event.GuildID, QUERY_STRING, MAX_MEMBER_GET)
@@ -38,7 +41,7 @@ func CommandHandle(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Gui
 			continue
 		}
 
-		optionList = append(optionList, dgo.SelectMenuOption{
+		guild.Wink.AllUserInfo = append(guild.Wink.AllUserInfo, dgo.SelectMenuOption{
 			Label: m.User.GlobalName,
 			Value: m.User.ID,
 		})
@@ -63,17 +66,17 @@ func CommandHandle(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Gui
               CustomID:     "wink_Start_listUpdate",
               Placeholder:  "사용자 목록",
               MinValues:    &minListCnt,
-              MaxValues:    len(optionList),
-              Options:      optionList,
+              MaxValues:    len(guild.Wink.AllUserInfo),
+              Options:      guild.Wink.AllUserInfo,
             },
           },
         },
         dgo.ActionsRow{
           Components: []dgo.MessageComponent{
             &dgo.Button{
+              CustomID: "wink_Start_Button", // 버튼 클릭 시 처리할 ID
               Label:    "게임시작",          // 버튼 텍스트
               Style:    dgo.PrimaryButton,   // 버튼 스타일
-              CustomID: "wink_Start_Button", // 버튼 클릭 시 처리할 ID
             },
           },
         },

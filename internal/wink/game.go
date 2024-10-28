@@ -21,28 +21,9 @@ func selectKing(players []string) (kingID string){
 }
 
 // 역할 공지 및 선택 메뉴!
+// send select menu and confirm button to all users
 func sendPlayersStartMessage(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild, players []string, kingID string) {
-  // send select menu and confirm button to all users
-  /*
-  type MessageSend struct {
-    Content         string                  `json:"content,omitempty"`
-    Embeds          []*MessageEmbed         `json:"embeds"`
-    TTS             bool                    `json:"tts"`
-    Components      []MessageComponent      `json:"components"`
-    Files           []*File                 `json:"-"`
-    AllowedMentions *MessageAllowedMentions `json:"allowed_mentions,omitempty"`
-    Reference       *MessageReference       `json:"message_reference,omitempty"`
-    StickerIDs      []string                `json:"sticker_ids"`
-    Flags           MessageFlags            `json:"flags,omitempty"`
-
-    // TODO: Remove this when compatibility is not required.
-    File *File `json:"-"`
-
-    // TODO: Remove this when compatibility is not required.
-    Embed *MessageEmbed `json:"-"`
-  }
-
-  */
+  var minVal int = 1
 
   king_embed := dgo.MessageEmbed{
     Title:        "당신은 왕입니다!",
@@ -64,50 +45,25 @@ func sendPlayersStartMessage(s *dgo.Session, i *dgo.InteractionCreate, guild *da
     Color:        0XC87C00,
   }
 
-	//var optionList []dgo.SelectMenuOption
-  //optionList := guild.SelectedUsers[i.GuildID]
-
-	// create select list from 'members'
-	//for _, m := range members {
-	//	// check if 'm' is a bot
-	//	if m.User.Bot {
-	//		continue
-	//	}
-
-	//	optionList = append(optionList, dgo.SelectMenuOption{
-	//		Label: m.User.GlobalName,
-	//		Value: m.User.ID,
-	//	})
-	//}
-  //var minVal int = 1
-  //var maxVal int = 1
-  
   data := dgo.MessageSend{
     Components: []dgo.MessageComponent{
-      /*
       dgo.ActionsRow{
         Components: []dgo.MessageComponent{
           dgo.SelectMenu{
-            CustomID:     "wink_Start_listUpdate",
+            CustomID:     "wink_Game_listUpdate",
             Placeholder:  "사용자 목록",
             MinValues:    &minVal,
-            MaxValues:    maxVal,
-            Options:      optionList,
+            MaxValues:    1,
+            Options:      guild.Wink.SelectedUsersInfo,
           },
         },
       },
-      */
       dgo.ActionsRow{
         Components: []dgo.MessageComponent{
           &dgo.Button{
-            Label:    "V",
-            Style:    dgo.SuccessButton,
-            CustomID: "wink_user_check",
-          },
-          &dgo.Button{
-            Label:    "X",
-            Style:    dgo.DangerButton,
-            CustomID: "wink_user_cancel",
+            Label:    "제출",                   // 버튼 텍스트
+            Style:    dgo.PrimaryButton,        // 버튼 스타일
+            CustomID: "wink_Game_submitButton", // 버튼 클릭 시 처리할 ID
           },
         },
       },

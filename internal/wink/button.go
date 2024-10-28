@@ -18,13 +18,32 @@ import (
 // on interaction event 'wink_Start_Button'
 func Start_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
   // check if player count is valid
-  players := guild.Wink.SelectedUsers[i.GuildID]
+  players := guild.Wink.SelectedUsersID
   if len(players) < MIN_PLAYER_CNT {
     log.Printf("Invalid player count, ending game")
     Start_Failed(s, i, guild, "인원수가 부족")
     return
   }
 	guild.Wink.TotalParticipants = len(players)
+
+  for _, u := range guild.Wink.AllUserInfo {
+    isPart := false
+
+    for _, a := range guild.Wink.SelectedUsersID {
+      if u.Value == a {
+        isPart = true
+        break
+      }
+    }
+
+    if isPart {
+      log.Printf("comparing values [%s] [%s]", u.Label, u.Value)
+      guild.Wink.SelectedUsersInfo = append(guild.Wink.SelectedUsersInfo, dgo.SelectMenuOption{
+        Label: u.Label,
+        Value: u.Label,
+      })
+    }
+  }
 
   // select king
   kingID := selectKing(players)
@@ -36,6 +55,9 @@ func Start_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
   Game_FollowUpMessage(s, i, guild)
 }
 
+func Game_submitButton(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
+  log.Printf("now, uh, nothing? flag people who submitted, and check if there is people who haven't submitted yet")
+}
 
 
 
@@ -81,7 +103,7 @@ func FollowUpHandler(s *dgo.Session, event *dgo.InteractionCreate, guild *data.G
 
 	// 체크된 유저 및 체크되지 않은 유저 목록 생성
 	var List, uncheckedUsersList string
-	for _, id := range guild.Wink.SelectedUsers[event.GuildID] {
+	for _, id := range guild.Wink.SelectedUsersID {
 		// 유저 정보를 가져오기
 		member, err := s.GuildMember(event.GuildID, id)
 		if err != nil {
@@ -145,7 +167,7 @@ func FollowUpHandler(s *dgo.Session, event *dgo.InteractionCreate, guild *data.G
 
 // 버튼 포함 임베드 메시지 생성
 func CreateFollowUpMessage(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
-	guild.Wink.TotalParticipants = len(guild.Wink.SelectedUsers[i.GuildID])
+	guild.Wink.TotalParticipants = len(guild.Wink.SelectedUsersID)
 
 	embed := &dgo.MessageEmbed{
 		Title:       "게임 시작!",

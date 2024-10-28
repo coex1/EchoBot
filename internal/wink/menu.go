@@ -14,15 +14,8 @@ import (
 // on interaction event 'wink_Start_listUpdate'
 func Start_listUpdate(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Guild) {
   // update selected user list
-  guild.Wink.SelectedUsers[event.GuildID] = event.MessageComponentData().Values
+  guild.Wink.SelectedUsersID = event.MessageComponentData().Values
 
-  err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
-    // 상호작용 업데이트가 약간의 지연 이후 진행
-    Type: dgo.InteractionResponseDeferredMessageUpdate,
-  })
-  if err != nil {
-    log.Printf("Error when responding the select menu update [%v]", err)
-  }
 }
 
 // on start fail
@@ -39,4 +32,9 @@ func Start_Failed(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild, c
   if err != nil {
     log.Printf("Failed sending follow-up message [%v]", err)
 	}
+}
+
+// on interaction event 'wink_Game_listUpdate'
+func Game_listUpdate(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Guild) {
+  guild.Wink.UserSelection[event.User.GlobalName] = event.MessageComponentData().Values[0]
 }

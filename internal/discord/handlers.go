@@ -27,25 +27,25 @@ func RegisterHandlers(s *dgo.Session, guild *data.Guild) {
 	s.AddHandler(func(s *dgo.Session, event *dgo.InteractionCreate) {
 		switch event.Type {
 		case dgo.InteractionApplicationCommand:
-			switch event.ApplicationCommandData().Name {
-			case "wink":
-        log.Printf("Starting 'wink' command handle")
-				wink.CommandHandle(s, event, guild)
-        log.Printf("Finished 'wink' command handle")
-			case "mafia":
-        log.Printf("Starting 'mafia' command handle")
-				mafia.CommandHandle(s, event, guild)
-        log.Printf("Finished 'mafia' command handle")
-			}
-		case dgo.InteractionMessageComponent:
-			switch event.MessageComponentData().CustomID {
-			case "wink_Start_listUpdate":
-        log.Printf("Starting 'wink_Start_listUpdate' handle")
-				wink.Start_listUpdate(s, event, guild)
-        log.Printf("Finished 'wink_Start_listUpdate' handle")
-			case "wink_Start_Button":
-        log.Printf("Starting 'wink_Start_Button' handle")
+      commandName := event.ApplicationCommandData().Name
 
+      log.Printf("Starting '%s' command handle", commandName)
+
+			switch commandName {
+			case "wink":
+				wink.CommandHandle(s, event, guild)
+			case "mafia":
+				mafia.CommandHandle(s, event, guild)
+			}
+
+      log.Printf("Finished '%s' command handle", commandName)
+		case dgo.InteractionMessageComponent:
+      customID := event.MessageComponentData().CustomID
+
+      log.Printf("Starting '%s' handle", customID)
+
+			switch customID {
+			case "wink_Start_listUpdate":
         // send response that event has been received and was acknowledged
         err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
           // Acknowledge that the event has been received,
@@ -57,28 +57,54 @@ func RegisterHandlers(s *dgo.Session, guild *data.Guild) {
           return
         }
 
+        wink.Start_listUpdate(s, event, guild)
+
+			case "wink_Start_Button":
+        err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
+          Type: dgo.InteractionResponseDeferredMessageUpdate,
+        })
+        if err != nil {
+          log.Printf("Responsne to interaction failed [%v]", err)
+          return
+        }
+
 				wink.Start_Button(s, event, guild)
-        log.Printf("Finished 'wink_Start_Button' handle")
+
+			case "wink_Game_listUpdate":
+        err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
+          Type: dgo.InteractionResponseDeferredMessageUpdate,
+        })
+        if err != nil {
+          log.Printf("Responsne to interaction failed [%v]", err)
+          return
+        }
+
+				wink.Game_listUpdate(s, event, guild)
+
+			case "wink_Game_submitButton":
+        err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
+          Type: dgo.InteractionResponseDeferredMessageUpdate,
+        })
+        if err != nil {
+          log.Printf("Responsne to interaction failed [%v]", err)
+          return
+        }
+
+				wink.Game_submitButton(s, event, guild)
 
 			case "wink_check":
-        log.Printf("Starting 'wink_check' handle")
 				wink.FollowUpHandler(s, event, guild)
-        log.Printf("Finished 'wink_check' handle")
 			case "wink_cancel":
-        log.Printf("Starting 'wink_cancel' handle")
 				wink.FollowUpHandler(s, event, guild)
-        log.Printf("Finished 'wink_cancel' handle")
 
-      case "wink_user_check":
-        log.Printf("testing 111111111111")
-      case "wink_user_cancel":
-        log.Printf("testing 2222222222222")
 
 			case "mafia_select_menu":
 				mafia.SelectMenu(s, event, guild)
 			case "mafia_start_button":
 				mafia.StartButton(s, event, guild)
 			}
+
+      log.Printf("Finished '%s' handle", customID)
 		}
 	})
 }
