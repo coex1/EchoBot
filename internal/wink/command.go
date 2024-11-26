@@ -21,11 +21,13 @@ func CommandHandle(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Gui
 	guild.Wink.SelectedUsersID = make([]string, 0)
 	guild.Wink.AllUserInfo = make([]dgo.SelectMenuOption, 0)
 	guild.Wink.SelectedUsersInfo = make([]dgo.SelectMenuOption, 0)
+	guild.Wink.ConfirmedUsers = make(map[string]bool)
 
 	guild.Wink.CheckedUsers = make(map[string]bool)
 	guild.Wink.TotalParticipants = 0
 	guild.Wink.MessageIDMap = make(map[string]string)
   guild.Wink.UserSelection = make(map[string]string)
+
 
 	// get guild members
 	members, err = s.GuildMembers(event.GuildID, QUERY_STRING, MAX_MEMBER_GET)

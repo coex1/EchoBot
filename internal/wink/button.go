@@ -49,14 +49,22 @@ func Start_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
   kingID := selectKing(players)
 
   // send role notice via private DM
-  sendPlayersStartMessage(s, i, guild, players, kingID)
+  sendPlayersStartMessage(s, guild, players, kingID)
 
   // send FollowUp message
   Game_FollowUpMessage(s, i, guild)
 }
 
 func Game_submitButton(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
-  log.Printf("now, uh, nothing? flag people who submitted, and check if there is people who haven't submitted yet")
+  target := guild.Wink.UserSelection[i.User.GlobalName]
+	guild.Wink.ConfirmedUsers[i.User.GlobalName] = true
+
+  log.Printf("[" + i.User.GlobalName +"] selected user [" + target + "]")
+
+  // ignore index
+  general.SendDM(s, i.User.ID, "지목하신 상대는 [" + target + "] 입니다!\n(원하시면 언제든지 수정하실 수 있으십니다!)")
+
+  checkEndCondition(s, guild)
 }
 
 

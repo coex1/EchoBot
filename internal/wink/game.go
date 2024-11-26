@@ -22,7 +22,7 @@ func selectKing(players []string) (kingID string){
 
 // 역할 공지 및 선택 메뉴!
 // send select menu and confirm button to all users
-func sendPlayersStartMessage(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild, players []string, kingID string) {
+func sendPlayersStartMessage(s *dgo.Session, guild *data.Guild, players []string, kingID string) {
   var minVal int = 1
 
   king_embed := dgo.MessageEmbed{
@@ -114,4 +114,19 @@ func Game_FollowUpMessage(s *dgo.Session, i *dgo.InteractionCreate, guild *data.
     log.Printf("Failed sending follow-up message [%v]", err)
 	}
   guild.Wink.MessageIDMap[i.GuildID] = msg.ID
+}
+
+func checkEndCondition(s *dgo.Session, guild *data.Guild) {
+  c := 0
+  for _, i :=	range guild.Wink.ConfirmedUsers {
+    if i {
+      c += 1
+    }
+  }
+
+  log.Printf("=-----> true cnt = %d", c)
+  if guild.Wink.TotalParticipants-1 == c {
+    log.Printf("Ending game!!!")
+  }
+
 }

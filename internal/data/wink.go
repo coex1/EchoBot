@@ -15,6 +15,9 @@ type Wink struct {
   // users selected to play the game
 	SelectedUsersID   []string
 
+  // users that have confirmed their target
+	ConfirmedUsers    map[string]bool
+
 	CheckedUsers      map[string]bool
 	TotalParticipants int
 	MessageIDMap      map[string]string
