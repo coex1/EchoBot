@@ -53,7 +53,7 @@ func RegisterHandlers(s *dgo.Session, guild *data.Guild) {
           Type: dgo.InteractionResponseDeferredMessageUpdate,
         })
         if err != nil {
-          log.Printf("Responsne to interaction failed [%v]", err)
+          log.Printf("Response to interaction failed [%v]", err)
           return
         }
 
@@ -64,7 +64,7 @@ func RegisterHandlers(s *dgo.Session, guild *data.Guild) {
           Type: dgo.InteractionResponseDeferredMessageUpdate,
         })
         if err != nil {
-          log.Printf("Responsne to interaction failed [%v]", err)
+          log.Printf("Response to interaction failed [%v]", err)
           return
         }
 
@@ -75,7 +75,7 @@ func RegisterHandlers(s *dgo.Session, guild *data.Guild) {
           Type: dgo.InteractionResponseDeferredMessageUpdate,
         })
         if err != nil {
-          log.Printf("Responsne to interaction failed [%v]", err)
+          log.Printf("Response to interaction failed [%v]", err)
           return
         }
 
@@ -85,18 +85,35 @@ func RegisterHandlers(s *dgo.Session, guild *data.Guild) {
         err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
           Type: dgo.InteractionResponseDeferredMessageUpdate,
         })
+
         if err != nil {
-          log.Printf("Responsne to interaction failed [%v]", err)
+          log.Printf("Response to interaction failed [%v]", err)
           return
         }
 
 				wink.Game_submitButton(s, event, guild)
 
-			case "wink_check":
-				wink.FollowUpHandler(s, event, guild)
-			case "wink_cancel":
+			case "wink_end":
+        err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
+          Type: dgo.InteractionResponseDeferredMessageUpdate,
+        })
+        if err != nil {
+          log.Printf("Response to interaction failed [%v]", err)
+          return
+        }
+
 				wink.FollowUpHandler(s, event, guild)
 
+			case "wink_restart":
+        err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
+          Type: dgo.InteractionResponseDeferredMessageUpdate,
+        })
+        if err != nil {
+          log.Printf("Response to interaction failed [%v]", err)
+          return
+        }
+
+				wink.FollowUpHandler(s, event, guild)
 
 			case "mafia_select_menu":
 				mafia.SelectMenu(s, event, guild)

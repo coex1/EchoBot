@@ -149,24 +149,15 @@ func FollowUpHandler(s *dgo.Session, event *dgo.InteractionCreate, guild *data.G
 		}
 	}
 
-	// 상호작용 응답 지연 후 아래 메시지 수정 진행
-	err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
-		Type: dgo.InteractionResponseDeferredMessageUpdate,
-	})
-	if err != nil {
-		log.Println("Error responding to interaction:", err)
-		return
-	}
-
-	// 메시지 수정
-	content := fmt.Sprintf("'%s'이(가) %s했습니다.\n", userGlobalName, action)
-	_, err = s.ChannelMessageEditComplex(&dgo.MessageEdit{
-		Channel:    event.ChannelID,
-		ID:         messageID,
-		Embeds:     &[]*dgo.MessageEmbed{embed},
-		Content:    &content,
-		Components: &event.Message.Components, // 기존 버튼 컴포넌트 유지
-	})
+  // 메시지 수정
+  content := fmt.Sprintf("'%s'이(가) %s했습니다.\n", userGlobalName, action)
+  _, err := s.ChannelMessageEditComplex(&dgo.MessageEdit{
+    Channel:    event.ChannelID,
+    ID:         messageID,
+    Embeds:     &[]*dgo.MessageEmbed{embed},
+    Content:    &content,
+    Components: &event.Message.Components, // 기존 버튼 컴포넌트 유지
+  })
 	if err != nil {
 		log.Println("Error updating message:", err)
 		return
