@@ -19,20 +19,6 @@ func selectKing(players []string) (kingID string){
   return
 }
 
-func resetGame(s *dgo.Session, guild *data.Guild){
-
-  // RESET
-	guild.Wink.SelectedUsersID = make([]string, 0)
-	guild.Wink.AllUserInfo = make([]dgo.SelectMenuOption, 0)
-	guild.Wink.SelectedUsersInfo = make([]dgo.SelectMenuOption, 0)
-	guild.Wink.ConfirmedUsers = make(map[string]bool)
-
-	guild.Wink.CheckedUsers = make(map[string]bool)
-	guild.Wink.TotalParticipants = 0
-	guild.Wink.MessageIDMap = make(map[string]string)
-  guild.Wink.UserSelection = make(map[string]string)
-}
-
 // 역할 공지 및 선택 메뉴!
 // send select menu and confirm button to all users
 func sendPlayersStartMessage(s *dgo.Session, guild *data.Guild, players []string, kingID string) {

@@ -15,57 +15,6 @@ import (
   dgo "github.com/bwmarrin/discordgo"
 )
 
-// on interaction event 'wink_Start_Button'
-func Start_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
-  // check if player count is valid
-  players := guild.Wink.SelectedUsersID
-  if len(players) < MIN_PLAYER_CNT {
-    log.Printf("Invalid player count, ending game")
-    Start_Failed(s, i, guild, "인원수가 부족")
-    return
-  }
-	guild.Wink.TotalParticipants = len(players)
-
-  for _, u := range guild.Wink.AllUserInfo {
-    isPart := false
-
-    for _, a := range guild.Wink.SelectedUsersID {
-      if u.Value == a {
-        isPart = true
-        break
-      }
-    }
-
-    if isPart {
-      log.Printf("comparing values [%s] [%s]", u.Label, u.Value)
-      guild.Wink.SelectedUsersInfo = append(guild.Wink.SelectedUsersInfo, dgo.SelectMenuOption{
-        Label: u.Label,
-        Value: u.Label,
-      })
-    }
-  }
-
-  // select king
-  kingID := selectKing(players)
-
-  // send role notice via private DM
-  sendPlayersStartMessage(s, guild, players, kingID)
-
-  // send FollowUp message
-  Game_FollowUpMessage(s, i, guild)
-}
-
-func Game_submitButton(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
-  target := guild.Wink.UserSelection[i.User.GlobalName]
-	guild.Wink.ConfirmedUsers[i.User.GlobalName] = true
-
-  log.Printf("[" + i.User.GlobalName +"] selected user [" + target + "]")
-
-  // ignore index
-  general.SendDM(s, i.User.ID, "지목하신 상대는 [" + target + "] 입니다!\n(원하시면 언제든지 수정하실 수 있으십니다!)")
-
-  checkEndCondition(s, guild)
-}
 
 
 
