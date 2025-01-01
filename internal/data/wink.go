@@ -6,6 +6,9 @@ import (
 )
 
 type Wink struct {
+  // game state
+  State             int
+
   // all user detail
 	AllUserInfo       []dgo.SelectMenuOption
 
@@ -23,4 +26,5 @@ type Wink struct {
 	MessageIDMap      map[string]string
 
 	UserSelection     map[string]string
+	UserSelectionFinal     map[string]string
 }

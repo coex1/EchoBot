@@ -93,6 +93,19 @@ func RegisterHandlers(s *dgo.Session, guild *data.Guild) {
 
 				wink.Game_submitButton(s, event, guild)
 
+			case "wink_Game_submitFakeButton":
+        err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
+          Type: dgo.InteractionResponseDeferredMessageUpdate,
+        })
+
+        if err != nil {
+          log.Printf("Response to interaction failed [%v]", err)
+          return
+        }
+
+				wink.Game_submitFakeButton(s, event, guild)
+
+
 			case "wink_end":
         err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
           Type: dgo.InteractionResponseDeferredMessageUpdate,

@@ -15,6 +15,9 @@ import (
 func reset_fully(g *data.Guild) {
   log.Printf("Resetting game data (fully)\n")
 
+  // game state
+  g.Wink.State = 0
+
   // a list of the channel's members (before selection)
 	g.Wink.AllUserInfo = make([]dgo.SelectMenuOption, 0)
 
@@ -28,6 +31,7 @@ func reset_fully(g *data.Guild) {
 	g.Wink.CheckedUsers = make(map[string]bool)
 	g.Wink.MessageIDMap = make(map[string]string)
   g.Wink.UserSelection = make(map[string]string)
+  g.Wink.UserSelectionFinal = make(map[string]string)
 }
 
 // reset all session variables

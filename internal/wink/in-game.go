@@ -3,6 +3,8 @@ package wink
 import (
   // system packages
 	"log"
+  "fmt"
+  "strings"
 
   // internal packages
   "github.com/coex1/EchoBot/internal/general"
@@ -12,14 +14,138 @@ import (
   dgo "github.com/bwmarrin/discordgo"
 )
 
+// on interaction event 'wink_Game_listUpdate'
+func Game_listUpdate(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Guild) {
+  guild.Wink.UserSelection[event.User.GlobalName] = event.MessageComponentData().Values[0]
+}
+
 func Game_submitButton(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
   target := guild.Wink.UserSelection[i.User.GlobalName]
+  guild.Wink.UserSelectionFinal[i.User.GlobalName] = target
 	guild.Wink.ConfirmedUsers[i.User.GlobalName] = true
 
+  // TODO: upgrade log to be a better log
   log.Printf("[" + i.User.GlobalName +"] selected user [" + target + "]")
 
   // ignore index
   general.SendDM(s, i.User.ID, "지목하신 상대는 [" + target + "] 입니다!\n(원하시면 언제든지 수정하실 수 있으십니다!)")
 
   checkEndCondition(s, guild)
+}
+
+func Game_submitFakeButton(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
+	guild.Wink.ConfirmedUsers[i.User.GlobalName] = true
+
+  // TODO: upgrade log to be a better log
+  log.Printf("the king has inputted a fake signal")
+
+  // ignore index
+  general.SendDM(s, i.User.ID, "윙크 받으셨다고 처리되었습니다!")
+
+  checkEndCondition(s, guild)
+}
+
+func checkEndCondition(s *dgo.Session, guild *data.Guild) {
+  // TODO: change c to a global variablec
+  c := 0
+  final_person_global_name := ""
+  for k, i :=	range guild.Wink.ConfirmedUsers {
+    if i {
+      c += 1
+    } else {
+      final_person_global_name = k
+    }
+  }
+
+  log.Printf("-----> true cnt = %d", c)
+  if guild.Wink.TotalParticipants-1 == c {
+    log.Printf("Ending game!!!final_person_global_name= ["+final_person_global_name +"]")
+    // send_noti_of_final_person(s, guild, final_person_global_name)
+  }
+
+}
+
+// ?
+func FollowUpHandler(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Guild) {
+	userID := event.Member.User.ID
+	userGlobalName := event.Member.User.GlobalName
+	action := ""
+
+	// 버튼 클릭에 따라 상태 업데이트
+	switch event.MessageComponentData().CustomID {
+	case "wink_check":
+		if !guild.Wink.CheckedUsers[userID] {
+			guild.Wink.CheckedUsers[userID] = true
+		}
+		action = "확인"
+	case "wink_cancel":
+		if guild.Wink.CheckedUsers[userID] {
+			guild.Wink.CheckedUsers[userID] = false
+		}
+		action = "취소"
+	}
+
+	// 현재 체크된 수 계산
+	checkedCount := general.CountCheckedUsers(guild.Wink.CheckedUsers)
+
+	// 기존 메시지 업데이트 (Followup 메시지 수정)
+	messageID := guild.Wink.MessageIDMap[event.GuildID]
+	if messageID == "" {
+		log.Println("No message found to update")
+		return
+	}
+
+	// 체크된 유저 및 체크되지 않은 유저 목록 생성
+	var List, uncheckedUsersList string
+	for _, id := range guild.Wink.SelectedUsersID {
+		// 유저 정보를 가져오기
+		member, err := s.GuildMember(event.GuildID, id)
+		if err != nil {
+			log.Println("Error fetching member:", err)
+			continue
+		}
+		userName := member.User.GlobalName
+
+		if guild.Wink.CheckedUsers[id] {
+			List += fmt.Sprintf("%s\n", userName)
+		} else {
+			uncheckedUsersList += fmt.Sprintf("%s\n", userName)
+		}
+	}
+
+	// 남은 사람이 한 명일 경우 처리
+	var embed *dgo.MessageEmbed
+	if checkedCount == guild.Wink.TotalParticipants-1 {
+		lastUserName := uncheckedUsersList
+		embed = &dgo.MessageEmbed{
+			Title: "마지막 남은 사람!\n",
+			Description: fmt.Sprintf(
+				"%s님, 당신이 마지막 사람입니다.\n\n왕일 것 같은 사람을 지목해주세요!", strings.ReplaceAll(lastUserName, "\n", ""),
+			),
+			Color: 0xff0000, // 다른 색으로 표시
+		}
+	} else {
+		embed = &dgo.MessageEmbed{
+			Title: "게임 진행 중...\n",
+			Description: fmt.Sprintf(
+				"윙크를 받으셨으면 V 버튼을 클릭 해 주세요!\n\n실수로 V 했을 경우 X 버튼으로 취소 해 주세요!\n\n**현재 윙크 받은 사람 수 :** %d / %d\n\n**확인한 유저 :**\n%s\n**확인하지 못한 유저 :**\n%s",
+				checkedCount, guild.Wink.TotalParticipants, List, uncheckedUsersList,
+			),
+			Color: 0x00ff00,
+		}
+	}
+
+  // 메시지 수정
+  content := fmt.Sprintf("'%s'이(가) %s했습니다.\n", userGlobalName, action)
+  _, err := s.ChannelMessageEditComplex(&dgo.MessageEdit{
+    Channel:    event.ChannelID,
+    ID:         messageID,
+    Embeds:     &[]*dgo.MessageEmbed{embed},
+    Content:    &content,
+    Components: &event.Message.Components, // 기존 버튼 컴포넌트 유지
+  })
+	if err != nil {
+		log.Println("Error updating message:", err)
+		return
+	}
 }
