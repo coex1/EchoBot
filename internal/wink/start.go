@@ -110,6 +110,7 @@ func sendPlayersStartMessage(s *dgo.Session, guild *data.Guild, players []string
 
   // data for king
   data_k := dgo.MessageSend{
+    Embeds: []*dgo.MessageEmbed{ &king_embed },
     Components: []dgo.MessageComponent{
       dgo.ActionsRow{
         Components: []dgo.MessageComponent{
@@ -125,10 +126,11 @@ func sendPlayersStartMessage(s *dgo.Session, guild *data.Guild, players []string
 
   // data for normies
   data_n := dgo.MessageSend{
+    Embeds: []*dgo.MessageEmbed{ &villager_embed },
     Components: []dgo.MessageComponent{
       dgo.ActionsRow{
         Components: []dgo.MessageComponent{
-          dgo.SelectMenu{
+          &dgo.SelectMenu{
             CustomID:     "wink_Game_listUpdate",
             Placeholder:  "사용자 목록",
             MinValues:    &minVal,
@@ -152,12 +154,8 @@ func sendPlayersStartMessage(s *dgo.Session, guild *data.Guild, players []string
   // ignore index
   for _, i := range players {
     if i == kingID {
-      // TODO: merge below 2 lines to 1
-      data_k.Embeds = []*dgo.MessageEmbed{ &king_embed }
       general.SendComplexDM(s, i, &data_k)
     } else {
-      // TODO: merge below 2 lines to 1
-      data_n.Embeds = []*dgo.MessageEmbed{ &villager_embed }
       general.SendComplexDM(s, i, &data_n)
     }
   }
