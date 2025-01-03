@@ -9,5 +9,5 @@ type Guild struct {
 }
 
 func Initialize(g *Guild){
-  g.Wink.SelectedUsers = make(map[string][]string)
+
 }
