@@ -16,6 +16,9 @@ func CommandHandle(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Gui
 	var err error
 	var members []*dgo.Member
 
+  // TODO: run after game state check
+  reset_fully(guild)
+
 	// get guild members
 	members, err = s.GuildMembers(event.GuildID, QUERY_STRING, MAX_MEMBER_GET)
 	if err != nil {
@@ -52,6 +55,7 @@ func CommandHandle(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Gui
         dgo.ActionsRow{
           Components: []dgo.MessageComponent{
             dgo.SelectMenu{
+              MenuType:     dgo.SelectMenuType(dgo.SelectMenuComponent),
               CustomID:     "wink_Start_listUpdate",
               Placeholder:  "사용자 목록",
               MinValues:    &minListCnt,
