@@ -5,6 +5,7 @@ import (
 	"log"
   "fmt"
   "strings"
+  "time"
 
   // internal packages
   "github.com/coex1/EchoBot/internal/general"
@@ -20,21 +21,32 @@ func Game_listUpdate(s *dgo.Session, event *dgo.InteractionCreate, guild *data.G
 }
 
 func Game_submitButton(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
-  target := guild.Wink.UserSelection[i.User.GlobalName]
-  guild.Wink.UserSelectionFinal[i.User.GlobalName] = target
-	guild.Wink.ConfirmedUsers[i.User.GlobalName] = true
+	if guild.Wink.ConfirmedUsers[i.User.GlobalName] == false {
+    target := guild.Wink.UserSelection[i.User.GlobalName]
 
-  // TODO: upgrade log to be a better log
-  log.Printf("[" + i.User.GlobalName +"] selected user [" + target + "]")
+    guild.Wink.ConfirmedCount++
+    guild.Wink.UserSelectionFinal[i.User.GlobalName] = target
+    guild.Wink.ConfirmedUsers[i.User.GlobalName] = true
+    log.Printf("-----> true cnt = %d", guild.Wink.ConfirmedCount)
 
-  // ignore index
-  general.SendDM(s, i.User.ID, "지목하신 상대는 [" + target + "] 입니다!\n(원하시면 언제든지 수정하실 수 있으십니다!)")
+    // TODO: upgrade log to be a better log
+    log.Printf("[" + i.User.GlobalName +"] selected user [" + target + "]")
 
-  checkEndCondition(s, guild)
+    // ignore index
+    general.SendDM(s, i.User.ID, "지목하신 상대는 [" + target + "] 입니다!\n(원하시면 언제든지 수정하실 수 있으십니다!)")
+  }
+
+  go func() {
+    checkEndCondition(s, guild)
+  }()
 }
 
 func Game_submitFakeButton(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
-	guild.Wink.ConfirmedUsers[i.User.GlobalName] = true
+	if guild.Wink.ConfirmedUsers[i.User.GlobalName] == false {
+    guild.Wink.ConfirmedCount++
+    guild.Wink.ConfirmedUsers[i.User.GlobalName] = true
+    log.Printf("-----> true cnt = %d", guild.Wink.ConfirmedCount)
+  }
 
   // TODO: upgrade log to be a better log
   log.Printf("the king has inputted a fake signal")
@@ -42,27 +54,66 @@ func Game_submitFakeButton(s *dgo.Session, i *dgo.InteractionCreate, guild *data
   // ignore index
   general.SendDM(s, i.User.ID, "윙크 받으셨다고 처리되었습니다!")
 
-  checkEndCondition(s, guild)
+  go func() {
+    checkEndCondition(s, guild)
+  }()
 }
 
 func checkEndCondition(s *dgo.Session, guild *data.Guild) {
-  // TODO: change c to a global variablec
-  c := 0
   final_person_global_name := ""
-  for k, i :=	range guild.Wink.ConfirmedUsers {
-    if i {
-      c += 1
-    } else {
-      final_person_global_name = k
+
+  if guild.Wink.TotalParticipants-1 == guild.Wink.ConfirmedCount {
+    log.Println("map? : ", guild.Wink.ConfirmedUsers)
+    for k, i :=	range guild.Wink.ConfirmedUsers {
+      log.Printf("---------> iter test = k=%s i=%d", k, i)
+      if i == false {
+        final_person_global_name = k
+      }
     }
+    
+    log.Printf("Ending game!!! final_person_global_name= [%s]", final_person_global_name)
+    send_noti_of_final_person(s, guild, final_person_global_name)
+  }
+}
+
+func send_noti_of_final_person(s *dgo.Session, guild *data.Guild, f string) {
+  if f == guild.Wink.KingName {
+    announce_results()
+  } else {
+    announce_last_person(s, guild, f)
+    go func() {
+      // start game end timer (default: 15 sec?)
+      time.Sleep(15)
+      announce_results()
+    }()
+  }
+}
+
+// announce to everyone the last person
+func announce_last_person (s *dgo.Session, guild *data.Guild, f string) {
+  players := guild.Wink.SelectedUsersID
+
+  embed := dgo.MessageEmbed{
+    Title:        "마지막 사람이.....",
+    Description:  "\""+f+"\" 입니다!!!\n" +
+                  "15초 뒤에 게임이 종료되니 얼른 투표해!",
+    Color:        0xFC2803,
+  }
+  data := dgo.MessageSend{
+    Embeds: []*dgo.MessageEmbed{ 
+      &embed,
+    },
   }
 
-  log.Printf("-----> true cnt = %d", c)
-  if guild.Wink.TotalParticipants-1 == c {
-    log.Printf("Ending game!!!final_person_global_name= ["+final_person_global_name +"]")
-    // send_noti_of_final_person(s, guild, final_person_global_name)
+  // ignore array index
+  for _, i := range players {
+    general.SendComplexDM(s, i, &data)
   }
+}
 
+// announce to everyone game results
+func announce_results() {
+  
 }
 
 // ?

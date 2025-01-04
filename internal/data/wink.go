@@ -20,6 +20,13 @@ type Wink struct {
 
   // users that have confirmed their target
 	ConfirmedUsers    map[string]bool
+  ConfirmedCount    int
+
+  // kingID
+  KingID string
+  KingName string
+
+  MasterList map[string]string
 
 	CheckedUsers      map[string]bool
 	TotalParticipants int

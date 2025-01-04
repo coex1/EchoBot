@@ -41,6 +41,8 @@ func Start_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
     }
 
     if isPart {
+      guild.Wink.ConfirmedUsers[u.Label] = false // initialize array
+
       log.Printf("comparing values [%s] [%s]", u.Label, u.Value)
       guild.Wink.SelectedUsersInfo = append(guild.Wink.SelectedUsersInfo, dgo.SelectMenuOption{
         Label: u.Label,
@@ -50,10 +52,11 @@ func Start_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
   }
 
   // select king
-  kingID := selectKing(players)
+  guild.Wink.KingID = selectKing(players)
+  guild.Wink.KingName = guild.Wink.MasterList[guild.Wink.KingID]
 
   // send role notice via private DM
-  sendPlayersStartMessage(s, guild, players, kingID)
+  sendPlayersStartMessage(s, guild, players, guild.Wink.KingID)
 
   // send FollowUp message
   Game_FollowUpMessage(s, i, guild)

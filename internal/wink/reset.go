@@ -26,6 +26,11 @@ func reset_fully(g *data.Guild) {
 	g.Wink.TotalParticipants = 0
 
 	g.Wink.ConfirmedUsers = make(map[string]bool)
+  g.Wink.ConfirmedCount = 0
+  g.Wink.KingID = "" 
+  g.Wink.KingName = ""
+
+	g.Wink.MasterList = make(map[string]string)
 
   // ?
 	g.Wink.CheckedUsers = make(map[string]bool)
@@ -39,6 +44,7 @@ func reset_part(g *data.Guild) {
   log.Printf("Resetting game data (partially)\n")
 
 	g.Wink.ConfirmedUsers = make(map[string]bool)
+  g.Wink.ConfirmedCount = 0
 
   // ?
 	g.Wink.CheckedUsers = make(map[string]bool)

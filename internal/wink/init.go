@@ -37,6 +37,8 @@ func CommandHandle(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Gui
 			Label: m.User.GlobalName,
 			Value: m.User.ID,
 		})
+
+    guild.Wink.MasterList[m.User.ID] = m.User.GlobalName
 	}
 
   response := &dgo.InteractionResponse{
