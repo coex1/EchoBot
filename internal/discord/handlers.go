@@ -115,7 +115,7 @@ func RegisterHandlers(s *dgo.Session, guild *data.Guild) {
           return
         }
 
-				wink.FollowUpHandler(s, event, guild)
+				//wink.FollowUpHandler(s, event, guild)
 
 			case "wink_restart":
         err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
@@ -126,7 +126,7 @@ func RegisterHandlers(s *dgo.Session, guild *data.Guild) {
           return
         }
 
-				wink.FollowUpHandler(s, event, guild)
+				//wink.FollowUpHandler(s, event, guild)
 
 			case "mafia_select_menu":
 				mafia.SelectMenu(s, event, guild)
