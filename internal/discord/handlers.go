@@ -126,7 +126,8 @@ func RegisterHandlers(s *dgo.Session, guild *data.Guild) {
           return
         }
 
-				//wink.FollowUpHandler(s, event, guild)
+        // TODO: change to Reset_Button
+				wink.Start_Button(s, event, guild)
 
 			case "mafia_select_menu":
 				mafia.SelectMenu(s, event, guild)

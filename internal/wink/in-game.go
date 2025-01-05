@@ -31,12 +31,9 @@ func Game_submitButton(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Gui
   guild.Wink.ConfirmedCount++
   log.Printf("Confirmed user count [%d]", guild.Wink.ConfirmedCount)
 
-  // input confirmation DM
-  general.SendDM(s, i.User.ID, "지목하신 상대는 [" + target + "] 입니다!\n(원하시면 언제든지 수정하실 수 있으십니다!)")
-
   go func() {
     if checkEndCondition(s, guild) == false {
-      broadcastGameStatus()
+      broadcastGameStatus(s, guild, i.User.GlobalName)
     }
   }()
 }
@@ -52,18 +49,57 @@ func Game_submitFakeButton(s *dgo.Session, i *dgo.InteractionCreate, guild *data
   guild.Wink.ConfirmedCount++
   log.Printf("Confirmed user count [%d]", guild.Wink.ConfirmedCount)
 
-  // input confirmation DM
-  general.SendDM(s, i.User.ID, "윙크 받으셨다고 처리되었습니다!")
-
   go func() {
     if checkEndCondition(s, guild) == false {
-      broadcastGameStatus()
+      broadcastGameStatus(s, guild, i.User.GlobalName)
     }
   }()
 }
 
 // send everyone a message about current game status
 // i.e who is left to receive a wink
-func broadcastGameStatus() {
+func broadcastGameStatus(s *dgo.Session, guild *data.Guild, u string) {
+  players := guild.Wink.SelectedUsersID
+  text := "**현시점 투표 상태!**\n\n"
+  voted := make([]string, guild.Wink.TotalParticipants)
+  not := make([]string, guild.Wink.TotalParticipants)
+  
+  for u, v := range guild.Wink.ConfirmedUsers {
+    if v == true {
+      voted = append(voted, u)
+    } else {
+      not = append(not, u)
+    }
+  }
 
+  text += "**투포 한 사람:**\n"
+  for _, v := range voted {
+    if len(v) != 0 {
+      text += " -> " + v + "\n"
+    }
+  }
+
+  text += "\n**투포 안한 사람:**\n"
+  for _, v := range not {
+    if len(v) != 0 {
+      text += " -> " + v + "\n"
+    }
+  }
+
+  embed := dgo.MessageEmbed{
+    Title:        "["+u+"]님이 투표하셨습니다!",
+    Description:  text,
+    Color:        0x26D16D,
+  }
+
+  // data for villagers
+  data := dgo.MessageSend{
+    Embeds: []*dgo.MessageEmbed{ 
+      &embed,
+    },
+  }
+
+  for _, i := range players {
+    general.SendComplexDM(s, i, &data)
+  }
 }

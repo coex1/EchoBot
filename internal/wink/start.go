@@ -18,7 +18,8 @@ func Start_listUpdate(s *dgo.Session, event *dgo.InteractionCreate, guild *data.
   guild.Wink.SelectedUsersID = event.MessageComponentData().Values
 }
 
-// on interaction event 'wink_Start_Button'
+// TODO: split start and reset
+// on interaction event 'wink_Start_Button' and 'wink_reset'
 func Start_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
   players := guild.Wink.SelectedUsersID
 

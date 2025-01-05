@@ -19,7 +19,6 @@ func checkEndCondition(s *dgo.Session, guild *data.Guild) (bool) {
   if guild.Wink.TotalParticipants-1 == guild.Wink.ConfirmedCount {
     log.Println("map? : ", guild.Wink.ConfirmedUsers)
     for k, i :=	range guild.Wink.ConfirmedUsers {
-      log.Printf("---------> iter test = k=%s i=%d", k, i)
       if i == false {
         final_person_global_name = k
       }
@@ -42,7 +41,7 @@ func send_noti_of_final_person(s *dgo.Session, guild *data.Guild, f string) {
     announce_last_person(s, guild, f)
     go func() {
       // start game end timer (default: 15 sec?)
-      time.Sleep(15)
+      time.Sleep(5 * time.Second) // TODO: change to 15
       announce_results(s, guild, f)
     }()
   }
@@ -73,37 +72,67 @@ func announce_last_person (s *dgo.Session, guild *data.Guild, f string) {
 // announce to everyone game results
 func announce_results(s *dgo.Session, guild *data.Guild, f string) {
   players := guild.Wink.SelectedUsersID
+  right := make([]string, guild.Wink.TotalParticipants)
+  wrong := make([]string, guild.Wink.TotalParticipants)
+  text := ""
 
-  embed_king_win := dgo.MessageEmbed{
-    Title:        "게임이 종료되었습니다!!!",
-    Description:  "왕은 \""+guild.Wink.KingName+"\"이였습니다!\n" +
-                  "마지막 시민은 \""+f+"\"이였습니다\n" +
-                  "\""+f+"\"님이 지셨습니다!",
-    Color:        0xFC2803,
+  if f == guild.Wink.KingName {
+    // king lose
+    text += "왕이 투표 안해서 왕이 졌습니다!\n왕은 ["+f+"]님이였습니다!" 
+  } else {
+    // check final person's target
+    target := guild.Wink.UserSelectionFinal[f]
+    if len(target) == 0 || target != guild.Wink.KingName {
+      // f loses
+      text += "["+f+"]님이 왕을 못맞췄습니다!\n왕은 ["+guild.Wink.KingName+"]님이였습니다!"
+      wrong = append(wrong, f)
+    } else {
+      // king lose
+      text += "["+f+"]님이 왕을 맞췄습니다!\n왕은 ["+guild.Wink.KingName+"]님이였습니다!"
+    }
   }
-  embed_last_win := dgo.MessageEmbed{
-    Title:        "게임이 종료되었습니다!!!",
-    Description:  "왕은 \""+guild.Wink.KingName+"\"이였습니다!\n" +
-                  "마지막 시민은 \""+f+"\"이였습니다\n" +
-                  "\""+guild.Wink.KingName+"\"님이 지셨습니다!",
-    Color:        0xFC2803,
+  
+  for u, v := range guild.Wink.UserSelectionFinal {
+    if v == guild.Wink.KingName {
+      right = append(right, u)
+    } else {
+      wrong = append(wrong, u)
+    }
+  }
+
+  text += "\n\n**왕을 정확히 맞춘 사람:**\n"
+  for _, v := range right {
+    if len(v) != 0 {
+      text += " -> " + v + "\n"
+    }
+  }
+
+  text += "\n**왕을 틀리게 맞춘 사람:**\n"
+  for _, v := range wrong {
+    if len(v) != 0 {
+      if len(guild.Wink.UserSelectionFinal[v]) != 0 {
+        text += " -> " + v + " [찍은 사람: \""+guild.Wink.UserSelectionFinal[v]+"\"]\n"
+      } else {
+        text += " -> " + v + " [투표안한바보]\n"
+      }
+    }
+  }
+
+  embed := dgo.MessageEmbed{
+    Title:        "게임 종료!!!",
+    Description:  text,
+    Color:        0xFFFFFF,
   }
 
   data := dgo.MessageSend{
     Embeds: []*dgo.MessageEmbed{ 
-      &embed_king_win,
-    },
-  }
-  data_2 := dgo.MessageSend{
-    Embeds: []*dgo.MessageEmbed{ 
-      &embed_last_win,
+      &embed,
     },
   }
 
   // ignore array index
   for _, i := range players {
     general.SendComplexDM(s, i, &data)
-    general.SendComplexDM(s, i, &data_2)
   }
   
   // TODO: add a announcement to guild chat as well (with reset buttons as well)
