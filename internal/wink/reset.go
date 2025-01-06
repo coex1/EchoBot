@@ -12,7 +12,7 @@ import (
 )
 
 // reset all global variables
-func reset_fully(g *data.Guild) {
+func resetGame(g *data.Guild) {
   log.Printf("Resetting game data (fully)\n")
 
   // game state

@@ -12,12 +12,17 @@ import (
 )
 
 func CommandHandle(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Guild) {
-	var minListCnt int = MIN_PLAYER_CNT
 	var err error
-	var members []*dgo.Member
+	var members []*dgo.Member // for getting potential game members
 
-  // TODO: run after game state check
-  reset_fully(guild)
+	var minListCnt int = MIN_PLAYER_CNT
+  var state int = guild.Wink.State
+
+
+  if state == data.NONE || state == data.ENDED {
+    // TODO: run after game state check
+    resetGame(guild)
+  }
 
 	// get guild members
 	members, err = s.GuildMembers(event.GuildID, QUERY_STRING, MAX_MEMBER_GET)

@@ -5,6 +5,15 @@ import (
   dgo "github.com/bwmarrin/discordgo"
 )
 
+// game states
+const (
+  NONE = iota + 0
+  INITIATED
+  IN_PROGRESS
+  LAST_PLAYER
+  ENDED
+)
+
 type Wink struct {
   // game state
   State             int
