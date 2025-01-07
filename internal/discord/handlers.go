@@ -45,7 +45,7 @@ func RegisterHandlers(s *dgo.Session, guild *data.Guild) {
       log.Printf("Starting '%s' handle", customID)
 
 			switch customID {
-			case "wink_Start_listUpdate":
+			case "wink_init_list":
         // send response that event has been received and was acknowledged
         err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
           // Acknowledge that the event has been received,
@@ -57,9 +57,9 @@ func RegisterHandlers(s *dgo.Session, guild *data.Guild) {
           return
         }
 
-        wink.Start_listUpdate(s, event, guild)
+        wink.Init_listUpdate(event, guild)
 
-			case "wink_Start_Button":
+			case "wink_start_button":
         err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
           Type: dgo.InteractionResponseDeferredMessageUpdate,
         })
@@ -68,9 +68,9 @@ func RegisterHandlers(s *dgo.Session, guild *data.Guild) {
           return
         }
 
-				wink.Start_Button(s, event, guild)
+				wink.Start_buttonPressed(s, event, guild)
 
-			case "wink_Game_listUpdate":
+			case "wink_game_list":
         err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
           Type: dgo.InteractionResponseDeferredMessageUpdate,
         })
@@ -79,9 +79,9 @@ func RegisterHandlers(s *dgo.Session, guild *data.Guild) {
           return
         }
 
-				wink.Game_listUpdate(s, event, guild)
+				wink.Game_listUpdate(event, guild)
 
-			case "wink_Game_submitButton":
+			case "wink_submit_norm_button":
         err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
           Type: dgo.InteractionResponseDeferredMessageUpdate,
         })
@@ -93,7 +93,7 @@ func RegisterHandlers(s *dgo.Session, guild *data.Guild) {
 
 				wink.Game_submitButton(s, event, guild)
 
-			case "wink_Game_submitFakeButton":
+			case "wink_submit_king_button":
         err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
           Type: dgo.InteractionResponseDeferredMessageUpdate,
         })
@@ -127,7 +127,7 @@ func RegisterHandlers(s *dgo.Session, guild *data.Guild) {
         }
 
         // TODO: change to Reset_Button
-				wink.Start_Button(s, event, guild)
+				//wink.Start_Button(s, event, guild)
 
 			case "mafia_select_menu":
 				mafia.SelectMenu(s, event, guild)

@@ -12,9 +12,9 @@ import (
   dgo "github.com/bwmarrin/discordgo"
 )
 
-// on interaction event 'wink_Game_listUpdate'
-func Game_listUpdate(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Guild) {
-  guild.Wink.UserSelection[event.User.GlobalName] = event.MessageComponentData().Values[0]
+// on interaction event 'wink_game_list'
+func Game_listUpdate(e *dgo.InteractionCreate, g *data.Guild) {
+  g.Wink.UserSelection[e.User.GlobalName] = e.MessageComponentData().Values[0]
 }
 
 func Game_submitButton(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {

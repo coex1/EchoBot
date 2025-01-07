@@ -13,21 +13,22 @@ import (
 
 func CommandHandle(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Guild) {
 	var err error
-	var members []*dgo.Member // for getting potential game members
+	var members []*dgo.Member // for getting channel members
 
-	var minListCnt int = MIN_PLAYER_CNT
-  var state int = guild.Wink.State
-
-
-  if state == data.NONE || state == data.ENDED {
-    // TODO: run after game state check
-    resetGame(guild)
+  if guild.Wink.State != data.NONE && guild.Wink.State != data.ENDED {
+		log.Printf("Invalid game state to run this command")
+    init_sendFailedResponse(s, event, "현재 상태에서 이 명령어를 사용하실 수 없습니다!")
+    return
   }
+
+  // reset all global variables
+  resetGame(guild)
 
 	// get guild members
 	members, err = s.GuildMembers(event.GuildID, QUERY_STRING, MAX_MEMBER_GET)
 	if err != nil {
-		log.Fatalf("Failed getting members [%v]", err)
+		log.Printf("Failed getting members [%v]", err)
+    init_sendFailedResponse(s, event, "Failed to get members")
 		return
 	}
 
@@ -38,14 +39,53 @@ func CommandHandle(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Gui
 			continue
 		}
 
-		guild.Wink.AllUserInfo = append(guild.Wink.AllUserInfo, dgo.SelectMenuOption{
-			Label: m.User.GlobalName,
-			Value: m.User.ID,
-		})
-
-    guild.Wink.MasterList[m.User.ID] = m.User.GlobalName
+    guild.Wink.NameList[m.User.ID] = m.User.GlobalName
+    guild.Wink.IDList[m.User.GlobalName] = m.User.ID
+    guild.Wink.MaxPossiblePlayers++
 	}
 
+  init_sendGameInitResponse(s, event, guild)
+}
+
+func init_sendFailedResponse(s *dgo.Session, e *dgo.InteractionCreate, f string) {
+  // create reponse
+  response := &dgo.InteractionResponse{
+    Type: dgo.InteractionResponseChannelMessageWithSource,
+    Data: &dgo.InteractionResponseData{
+      Embeds: []*dgo.MessageEmbed{
+        {
+          Title:        "시작 실패",
+          Description:  "아래 이유로 게임을 시작하기 실패하였습니다.\n"+
+                        "["+f+"]",
+          Color:        0xC71818,
+        },
+      },
+    },
+  }
+
+  // send response
+  err := s.InteractionRespond(e.Interaction, response)
+  if err != nil {
+    log.Printf("Failed to send response [%v] (g2)", err)
+    return
+  }
+}
+
+func init_sendGameInitResponse(s *dgo.Session, e *dgo.InteractionCreate, g *data.Guild) {
+	var min int = MIN_PLAYER_CNT
+  var max int = 25
+	var list []dgo.SelectMenuOption = make([]dgo.SelectMenuOption, g.Wink.MaxPossiblePlayers)
+
+  // create menu list
+  for id, name := range g.NameList {
+    list = append(list, dgo.SelectMenuOption{
+      Label: name,
+      Value: id,
+    })
+    log.Printf("name: [%s], id: [%s]\n", name, id);
+  }
+
+  // create reponse
   response := &dgo.InteractionResponse{
 		Type: dgo.InteractionResponseChannelMessageWithSource,
 		Data: &dgo.InteractionResponseData{
@@ -63,18 +103,18 @@ func CommandHandle(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Gui
           Components: []dgo.MessageComponent{
             dgo.SelectMenu{
               MenuType:     dgo.SelectMenuType(dgo.SelectMenuComponent),
-              CustomID:     "wink_Start_listUpdate",
+              CustomID:     "wink_init_list",
               Placeholder:  "사용자 목록",
-              MinValues:    &minListCnt,
-              MaxValues:    len(guild.Wink.AllUserInfo),
-              Options:      guild.Wink.AllUserInfo,
+              MinValues:    &min,
+              MaxValues:    max,
+              Options:      list,
             },
           },
         },
         dgo.ActionsRow{
           Components: []dgo.MessageComponent{
             &dgo.Button{
-              CustomID: "wink_Start_Button", // 버튼 클릭 시 처리할 ID
+              CustomID: "wink_start_button", // 버튼 클릭 시 처리할 ID
               Label:    "게임시작",          // 버튼 텍스트
               Style:    dgo.PrimaryButton,   // 버튼 스타일
             },
@@ -84,10 +124,16 @@ func CommandHandle(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Gui
 		},
 	}
 
-  // respond to command by sending Start Menu
-	err = s.InteractionRespond(event.Interaction, response)
+  // send response
+  err := s.InteractionRespond(e.Interaction, response)
 	if err != nil {
-		log.Fatalf("Failed to send response [%v]", err)
+		log.Printf("Failed to send response [%v] (g1)", err)
 		return
 	}
+}
+
+// on interaction event 'wink_init_list'
+// update selected user list
+func Init_listUpdate(e *dgo.InteractionCreate, g *data.Guild) {
+  g.Wink.SelectedUsersID = e.MessageComponentData().Values
 }

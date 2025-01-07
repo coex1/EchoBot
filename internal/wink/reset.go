@@ -6,9 +6,6 @@ import (
 
   // internal packages
   "github.com/coex1/EchoBot/internal/data"
-
-  // external packages
-  dgo "github.com/bwmarrin/discordgo"
 )
 
 // reset all global variables
@@ -19,18 +16,19 @@ func resetGame(g *data.Guild) {
   g.Wink.State = 0
 
   // a list of the channel's members (before selection)
-	g.Wink.AllUserInfo = make([]dgo.SelectMenuOption, 0)
 
 	g.Wink.SelectedUsersID = make([]string, 0)
-	g.Wink.SelectedUsersInfo = make([]dgo.SelectMenuOption, 0)
 	g.Wink.TotalParticipants = 0
+
+  g.Wink.MaxPossiblePlayers = 0
 
 	g.Wink.ConfirmedUsers = make(map[string]bool)
   g.Wink.ConfirmedCount = 0
   g.Wink.KingID = "" 
-  g.Wink.KingName = ""
+  g.Wink.KingName = "" 
 
-	g.Wink.MasterList = make(map[string]string)
+	g.Wink.NameList = make(map[string]string)
+	g.Wink.IDList = make(map[string]string)
 
   // ?
 	g.Wink.CheckedUsers = make(map[string]bool)
