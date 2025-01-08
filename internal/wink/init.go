@@ -73,8 +73,11 @@ func init_sendFailedResponse(s *dgo.Session, e *dgo.InteractionCreate, f string)
 
 func init_sendGameInitResponse(s *dgo.Session, e *dgo.InteractionCreate, g *data.Guild) {
 	var min int = MIN_PLAYER_CNT
-  var max int = 25
-	var list []dgo.SelectMenuOption = make([]dgo.SelectMenuOption, g.Wink.MaxPossiblePlayers)
+  var max int = len(g.NameList)
+	var list []dgo.SelectMenuOption = make([]dgo.SelectMenuOption, 0)
+	//var list []dgo.SelectMenuOption = make([]dgo.SelectMenuOption, max)
+
+  log.Printf("DEBUG: 1[%d] 2[%d]\n", g.Wink.MaxPossiblePlayers, max)
 
   // create menu list
   for id, name := range g.NameList {
@@ -102,12 +105,12 @@ func init_sendGameInitResponse(s *dgo.Session, e *dgo.InteractionCreate, g *data
         dgo.ActionsRow{
           Components: []dgo.MessageComponent{
             dgo.SelectMenu{
-              MenuType:     dgo.SelectMenuType(dgo.SelectMenuComponent),
-              CustomID:     "wink_init_list",
-              Placeholder:  "사용자 목록",
-              MinValues:    &min,
-              MaxValues:    max,
-              Options:      list,
+              MenuType:    dgo.SelectMenuType(dgo.SelectMenuComponent),
+              CustomID:    "wink_init_list",
+              Placeholder: "사용자 목록",
+              MinValues:   &min,
+              MaxValues:   len(list),
+              Options:     list,
             },
           },
         },

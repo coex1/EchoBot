@@ -12,7 +12,7 @@ import (
   dgo "github.com/bwmarrin/discordgo"
 )
 
-// on interaction event 'wink_game_list'
+// on interaction event 'wink_norm_list'
 func Game_listUpdate(e *dgo.InteractionCreate, g *data.Guild) {
   g.Wink.UserSelection[e.User.GlobalName] = e.MessageComponentData().Values[0]
 }

@@ -70,7 +70,7 @@ func RegisterHandlers(s *dgo.Session, guild *data.Guild) {
 
 				wink.Start_buttonPressed(s, event, guild)
 
-			case "wink_game_list":
+			case "wink_norm_list":
         err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
           Type: dgo.InteractionResponseDeferredMessageUpdate,
         })
