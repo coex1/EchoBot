@@ -103,7 +103,7 @@ func RegisterHandlers(s *dgo.Session, guild *data.Guild) {
           return
         }
 
-				wink.Game_submitFakeButton(s, event, guild)
+				wink.Game_submitKingButton(s, event, guild)
 
 
 			case "wink_end":

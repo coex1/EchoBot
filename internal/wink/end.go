@@ -13,6 +13,7 @@ import (
   dgo "github.com/bwmarrin/discordgo"
 )
 
+// check if the game should continue or end
 func checkEndCondition(s *dgo.Session, guild *data.Guild) (bool) {
   final_person_global_name := ""
 

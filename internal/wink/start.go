@@ -28,9 +28,10 @@ func Start_buttonPressed(s *dgo.Session, i *dgo.InteractionCreate, g *data.Guild
 
   // create list, for menu, for users to select who they think is the king
   for _, v := range players {
-    log.Printf("Player ["+ g.Wink.NameList[v] +"] is included in the game")
+    log.Printf("Player [%s] is included in the game\n", g.Wink.NameList[v])
     
     g.Wink.ConfirmedUsers[v] = false // initialize 'checklist' array
+
     list = append(list, dgo.SelectMenuOption{
       Label: g.Wink.NameList[v],
       Value: v,
@@ -42,7 +43,7 @@ func Start_buttonPressed(s *dgo.Session, i *dgo.InteractionCreate, g *data.Guild
 
 // on start fail
 func start_sendFailedResponse(s *dgo.Session, i *dgo.InteractionCreate, cause string) {
-  _, err := s.FollowupMessageCreate(i.Interaction, true, &dgo.WebhookParams{
+  var embed *dgo.WebhookParams = &dgo.WebhookParams{
     Embeds: []*dgo.MessageEmbed{ 
       {
         Title:        "게임 시작 실패!",
@@ -50,7 +51,9 @@ func start_sendFailedResponse(s *dgo.Session, i *dgo.InteractionCreate, cause st
         Color:        0xFF0000,
       },
     },
-  })
+  }
+
+  _, err := s.FollowupMessageCreate(i.Interaction, true, embed)
   if err != nil {
     log.Printf("Failed sending follow-up message [%v]", err)
 	}
@@ -67,7 +70,7 @@ func startGame(s *dgo.Session, i *dgo.InteractionCreate, g *data.Guild, list []d
   sendPlayersRoleNotices(s, g, list)
 
   // send channel control menu message
-  sendChannelControlMenuResponse(s, i, g)
+  sendChannelControlMenuResponse(s, i)
 }
 
 // notify all users of their roles
@@ -148,8 +151,8 @@ func sendPlayersRoleNotices(s *dgo.Session, g *data.Guild, list []dgo.SelectMenu
 }
 
 // send channel control menu message
-func sendChannelControlMenuResponse(s *dgo.Session, i *dgo.InteractionCreate, g *data.Guild) {
-  _, err := s.FollowupMessageCreate(i.Interaction, true, &dgo.WebhookParams{
+func sendChannelControlMenuResponse(s *dgo.Session, i *dgo.InteractionCreate) {
+  var embed *dgo.WebhookParams = &dgo.WebhookParams{
     Embeds: []*dgo.MessageEmbed{ 
       {
         Title:        "게임은 시작되었습니다",
@@ -174,8 +177,9 @@ func sendChannelControlMenuResponse(s *dgo.Session, i *dgo.InteractionCreate, g 
         },
       },
     },
-  })
-  
+  }
+
+  _, err := s.FollowupMessageCreate(i.Interaction, true, embed)
   if err != nil {
     log.Printf("Failed sending a FollowUp message [%v]", err)
 	}
