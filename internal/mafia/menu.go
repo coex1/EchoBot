@@ -11,21 +11,18 @@ import (
 	dgo "github.com/bwmarrin/discordgo"
 )
 
-// Start
-var start_selectMenu dgo.SelectMenu = dgo.SelectMenu{
-	CustomID:    "mafia_Start_listUpdate",
-	Placeholder: "사용자를 선택해 주세요!",
-}
-
 // on interaction event 'mafia_Start_listUpdate'
+// 드롭다운 선택 시 실행
 func Start_listUpdate(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
+
+	// 선택한 플레이어 저장
 	guild.Mafia.SelectedUsers[i.GuildID] = i.MessageComponentData().Values
 
+	// 선택한 플레이어 목록 출력
 	err := s.InteractionRespond(i.Interaction, &dgo.InteractionResponse{
-		// 상호작용 지연
-		Type: dgo.InteractionResponseDeferredMessageUpdate,
+		Type: dgo.InteractionResponseUpdateMessage,
 	})
 	if err != nil {
-		log.Println("Error responding to select menu interaction:", err)
+		log.Println("플레이어 목록 출력 실패:", err)
 	}
 }
