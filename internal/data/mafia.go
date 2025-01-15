@@ -1,5 +1,10 @@
 package data
 
 type Mafia struct {
-	SelectedUsersMap map[string][]string
+	SelectedUsers map[string][]string // GuildID : []UserID
+
+	MafiaList   []string
+	PoliceList  []string
+	DoctorList  []string
+	CitizenList []string
 }
