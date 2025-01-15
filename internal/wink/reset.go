@@ -25,10 +25,11 @@ func resetGame(g *data.Guild) {
 	g.Wink.ConfirmedUsers = make(map[string]bool)
   g.Wink.ConfirmedCount = 0
   g.Wink.KingID = "" 
-  g.Wink.KingName = "" 
 
 	g.Wink.NameList = make(map[string]string)
 	g.Wink.IDList = make(map[string]string)
+
+  g.Wink.FinalName = ""
 
   // ?
 	g.Wink.CheckedUsers = make(map[string]bool)

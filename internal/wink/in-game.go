@@ -84,7 +84,7 @@ func broadcastGameStatus(s *dgo.Session, guild *data.Guild, u string) {
   data := dgo.MessageSend{
     Embeds: []*dgo.MessageEmbed{ 
       {
-        Title:        "["+u+"]님이 투표하셨습니다!",
+        Title:        "[ " + u + " ]님이 투표하셨습니다!",
         Description:  text,
         Color:        0x26D16D,
       },

@@ -29,8 +29,9 @@ type Wink struct {
 
   // king's ID
   KingID string
-  KingName string
 
+  // final player
+  FinalName string
 
 	CheckedUsers      map[string]bool
 	TotalParticipants int

@@ -30,7 +30,9 @@ func Start_buttonPressed(s *dgo.Session, i *dgo.InteractionCreate, g *data.Guild
   for _, v := range players {
     log.Printf("Player [%s] is included in the game\n", g.Wink.NameList[v])
     
-    g.Wink.ConfirmedUsers[v] = false // initialize 'checklist' array
+    // initializing arrays
+    g.Wink.ConfirmedUsers[v] = false
+    g.Wink.UserSelectionFinal[v] = ""
 
     list = append(list, dgo.SelectMenuOption{
       Label: g.Wink.NameList[v],
