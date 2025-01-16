@@ -29,11 +29,8 @@ func resetGame(g *data.Guild) {
 	g.Wink.NameList = make(map[string]string)
 	g.Wink.IDList = make(map[string]string)
 
-  g.Wink.FinalName = ""
-
   // ?
 	g.Wink.CheckedUsers = make(map[string]bool)
-	g.Wink.MessageIDMap = make(map[string]string)
   g.Wink.UserSelection = make(map[string]string)
   g.Wink.UserSelectionFinal = make(map[string]string)
 }
@@ -47,6 +44,5 @@ func reset_part(g *data.Guild) {
 
   // ?
 	g.Wink.CheckedUsers = make(map[string]bool)
-	g.Wink.MessageIDMap = make(map[string]string)
   g.Wink.UserSelection = make(map[string]string)
 }

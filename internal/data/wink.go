@@ -24,6 +24,7 @@ type Wink struct {
   // all selected detail
 
   // users that have confirmed their target
+  // ID -> BOOL
 	ConfirmedUsers    map[string]bool
   ConfirmedCount    int
 
@@ -31,12 +32,13 @@ type Wink struct {
   KingID string
 
   // final player
-  FinalName string
+  FinalPlayerID string
 
+  // ID -> BOOL
 	CheckedUsers      map[string]bool
 	TotalParticipants int
-	MessageIDMap      map[string]string
 
+  // ID -> ID
 	UserSelection     map[string]string
 	UserSelectionFinal     map[string]string
 }

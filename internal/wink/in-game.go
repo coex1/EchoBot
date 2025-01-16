@@ -13,16 +13,16 @@ import (
 )
 
 // on interaction event 'wink_norm_list'
-func Game_listUpdate(e *dgo.InteractionCreate, g *data.Guild) {
-  g.Wink.UserSelection[e.User.GlobalName] = e.MessageComponentData().Values[0]
+func Game_listUpdate(i *dgo.InteractionCreate, g *data.Guild) {
+  g.Wink.UserSelection[i.User.ID] = i.MessageComponentData().Values[0]
 }
 
 // when players select their target
 func Game_submitButton(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
-  target := guild.Wink.UserSelection[i.User.GlobalName]
-  guild.Wink.UserSelectionFinal[i.User.GlobalName] = target
+  var target string = guild.Wink.UserSelection[i.User.ID]
 
-  log.Printf("User [%s] has selected user [%s] as their target", i.User.GlobalName, target)
+  guild.Wink.UserSelectionFinal[i.User.ID] = target
+  log.Printf("User [%s] has selected user [%s] as their target", i.User.GlobalName, guild.NameList[target])
 
 	if guild.Wink.ConfirmedUsers[i.User.ID] == true {
     return
