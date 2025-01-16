@@ -128,9 +128,30 @@ func RegisterHandlers(s *dgo.Session, guild *data.Guild) {
 				// TODO: change to Reset_Button
 				wink.Start_Button(s, event, guild)
 
-			case "mafia_select_menu":
+			case "mafia_Start_listUpdate":
+				// send response that event has been received and was acknowledged
+				err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
+					// Acknowledge that the event has been received,
+					// and will be updating the previous message later
+					Type: dgo.InteractionResponseDeferredMessageUpdate,
+				})
+				if err != nil {
+					log.Printf("Response to interaction failed [%v]", err)
+					return
+				}
 				mafia.Start_listUpdate(s, event, guild)
-			case "mafia_start_button":
+
+			case "mafia_Start_button":
+				// send response that event has been received and was acknowledged
+				err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
+					// Acknowledge that the event has been received,
+					// and will be updating the previous message later
+					Type: dgo.InteractionResponseDeferredMessageUpdate,
+				})
+				if err != nil {
+					log.Printf("Response to interaction failed [%v]", err)
+					return
+				}
 				mafia.Start_Button(s, event, guild)
 			}
 
