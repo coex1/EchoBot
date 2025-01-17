@@ -33,7 +33,7 @@ func RegisterHandlers(s *dgo.Session, guild *data.Guild) {
 
 			switch commandName {
 			case "wink":
-				wink.CommandHandle(s, event, guild)
+				wink.Init_CommandHandle(s, event, guild)
 			case "mafia":
 				mafia.CommandHandle(s, event, guild)
 			}

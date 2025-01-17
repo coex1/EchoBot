@@ -11,18 +11,18 @@ import (
   dgo "github.com/bwmarrin/discordgo"
 )
 
-func CommandHandle(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Guild) {
+func Init_CommandHandle(s *dgo.Session, event *dgo.InteractionCreate, g *data.Guild) {
 	var err error
 	var members []*dgo.Member // for getting channel members
 
-  if guild.Wink.State != data.NONE && guild.Wink.State != data.ENDED {
+  if g.Wink.State != data.NONE && g.Wink.State != data.ENDED {
 		log.Printf("Invalid game state to run this command")
     init_sendFailedResponse(s, event, "현재 상태에서 이 명령어를 사용하실 수 없습니다!")
     return
   }
 
   // reset all global variables
-  resetGame(guild)
+  resetGame(g)
 
 	// get guild members
 	members, err = s.GuildMembers(event.GuildID, QUERY_STRING, MAX_MEMBER_GET)
@@ -39,12 +39,13 @@ func CommandHandle(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Gui
 			continue
 		}
 
-    guild.Wink.NameList[m.User.ID] = m.User.GlobalName
-    guild.Wink.IDList[m.User.GlobalName] = m.User.ID
-    guild.Wink.MaxPossiblePlayers++
+    g.Wink.NameList[m.User.ID] = m.User.GlobalName
+    g.Wink.MaxPossiblePlayers++
 	}
 
-  init_sendGameInitResponse(s, event, guild)
+  init_sendGameInitResponse(s, event, g)
+
+  g.Wink.State = data.INITIATED
 }
 
 func init_sendFailedResponse(s *dgo.Session, e *dgo.InteractionCreate, f string) {
@@ -73,11 +74,7 @@ func init_sendFailedResponse(s *dgo.Session, e *dgo.InteractionCreate, f string)
 
 func init_sendGameInitResponse(s *dgo.Session, e *dgo.InteractionCreate, g *data.Guild) {
 	var min int = MIN_PLAYER_CNT
-  var max int = len(g.NameList)
 	var list []dgo.SelectMenuOption = make([]dgo.SelectMenuOption, 0)
-	//var list []dgo.SelectMenuOption = make([]dgo.SelectMenuOption, max)
-
-  log.Printf("DEBUG: 1[%d] 2[%d]\n", g.Wink.MaxPossiblePlayers, max)
 
   // create menu list
   for id, name := range g.NameList {
@@ -85,7 +82,6 @@ func init_sendGameInitResponse(s *dgo.Session, e *dgo.InteractionCreate, g *data
       Label: name,
       Value: id,
     })
-    log.Printf("name: [%s], id: [%s]\n", name, id);
   }
 
   // create reponse

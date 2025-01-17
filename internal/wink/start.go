@@ -24,6 +24,7 @@ func Start_buttonPressed(s *dgo.Session, i *dgo.InteractionCreate, g *data.Guild
     return
   }
 
+  resetPart(g) // reset only parts of the game
 	g.Wink.TotalParticipants = count
 
   // create list, for menu, for users to select who they think is the king
@@ -40,7 +41,7 @@ func Start_buttonPressed(s *dgo.Session, i *dgo.InteractionCreate, g *data.Guild
     })
   }
 
-  startGame(s, i, g, list)
+  Start_Game(s, i, g, list)
 }
 
 // on start fail
@@ -61,7 +62,7 @@ func start_sendFailedResponse(s *dgo.Session, i *dgo.InteractionCreate, cause st
 	}
 }
 
-func startGame(s *dgo.Session, i *dgo.InteractionCreate, g *data.Guild, list []dgo.SelectMenuOption) {
+func Start_Game(s *dgo.Session, i *dgo.InteractionCreate, g *data.Guild, list []dgo.SelectMenuOption) {
   var players []string = g.Wink.SelectedUsersID
 
   // select king
@@ -69,15 +70,17 @@ func startGame(s *dgo.Session, i *dgo.InteractionCreate, g *data.Guild, list []d
   log.Printf("User [%s] has been selected as this round's king!\n", g.Wink.NameList[g.Wink.KingID])
 
   // send role notice via private DMs
-  sendPlayersRoleNotices(s, g, list)
+  start_sendPlayersRoleNotices(s, g, list)
 
   // send channel control menu message
-  sendChannelControlMenuResponse(s, i)
+  start_sendChannelControlMenuResponse(s, i)
+
+  g.Wink.State = data.IN_PROGRESS
 }
 
 // notify all users of their roles
 // and send select menu and confirm button to all users
-func sendPlayersRoleNotices(s *dgo.Session, g *data.Guild, list []dgo.SelectMenuOption) {
+func start_sendPlayersRoleNotices(s *dgo.Session, g *data.Guild, list []dgo.SelectMenuOption) {
   var min int = 1
 
   // data for king
@@ -153,7 +156,7 @@ func sendPlayersRoleNotices(s *dgo.Session, g *data.Guild, list []dgo.SelectMenu
 }
 
 // send channel control menu message
-func sendChannelControlMenuResponse(s *dgo.Session, i *dgo.InteractionCreate) {
+func start_sendChannelControlMenuResponse(s *dgo.Session, i *dgo.InteractionCreate) {
   var embed *dgo.WebhookParams = &dgo.WebhookParams{
     Embeds: []*dgo.MessageEmbed{ 
       {

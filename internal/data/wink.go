@@ -10,35 +10,19 @@ const (
 )
 
 type Wink struct {
-  // game state
-  State               int
+  State               int               // game state
 
-  // every possible player information
-  IDList              map[string]string
-  NameList            map[string]string
+  NameList            map[string]string // list of every possible player
   MaxPossiblePlayers  int
+	SelectedUsersID     []string          // users selected to play the game
+	TotalParticipants   int
 
-  // users selected to play the game
-	SelectedUsersID     []string
+	ConfirmedUsers      map[string]bool   // users that have confirmed their target (ID -> BOOL)
+  ConfirmedCount      int
 
-  // all selected detail
+  KingID              string            // king's ID
+  FinalPlayerID       string            // final player
 
-  // users that have confirmed their target
-  // ID -> BOOL
-	ConfirmedUsers    map[string]bool
-  ConfirmedCount    int
-
-  // king's ID
-  KingID string
-
-  // final player
-  FinalPlayerID string
-
-  // ID -> BOOL
-	CheckedUsers      map[string]bool
-	TotalParticipants int
-
-  // ID -> ID
-	UserSelection     map[string]string
-	UserSelectionFinal     map[string]string
+	UserSelection       map[string]string // player's selection (ID -> ID)
+	UserSelectionFinal  map[string]string // player's final selection (ID -> ID)
 }

@@ -14,7 +14,7 @@ import (
 )
 
 // check if the game should continue or end
-func checkEndCondition(s *dgo.Session, g *data.Guild) (bool) {
+func end_checkEndCondition(s *dgo.Session, g *data.Guild) (bool) {
   if g.Wink.TotalParticipants-1 == g.Wink.ConfirmedCount {
     for k, i :=	range g.Wink.ConfirmedUsers {
       if i == false {
@@ -22,17 +22,19 @@ func checkEndCondition(s *dgo.Session, g *data.Guild) (bool) {
         break
       }
     }
+
     log.Printf("User [%s] is the last person to vote!", g.Wink.NameList[g.Wink.FinalPlayerID])
+    g.Wink.State = data.LAST_PLAYER
 
     if g.Wink.FinalPlayerID == g.Wink.KingID {
-      broadcastResults(s, g)
+      end_broadcastResults(s, g)
     } else {
-      broadcastFinalPlayer(s, g)
+      end_broadcastFinalPlayer(s, g)
 
       go func() {
         // start game end timer (default: 15 sec? should be enough)
         time.Sleep(5 * time.Second) // TODO: change to 15
-        broadcastResults(s, g)
+        end_broadcastResults(s, g)
       }()
     }
 
@@ -43,7 +45,7 @@ func checkEndCondition(s *dgo.Session, g *data.Guild) (bool) {
 }
 
 // announce to everyone the last person
-func broadcastFinalPlayer(s *dgo.Session, g *data.Guild) {
+func end_broadcastFinalPlayer(s *dgo.Session, g *data.Guild) {
   players := g.Wink.SelectedUsersID
 
   data := dgo.MessageSend{
@@ -64,7 +66,7 @@ func broadcastFinalPlayer(s *dgo.Session, g *data.Guild) {
 }
 
 // announce to everyone game results
-func broadcastResults(s *dgo.Session, g *data.Guild) {
+func end_broadcastResults(s *dgo.Session, g *data.Guild) {
   var kingName string = g.Wink.NameList[g.Wink.KingID]
   var finalName string = g.Wink.NameList[g.Wink.FinalPlayerID]
   var players []string = g.Wink.SelectedUsersID
@@ -92,8 +94,9 @@ func broadcastResults(s *dgo.Session, g *data.Guild) {
   }
   
   for u, v := range g.Wink.UserSelectionFinal {
-    log.Printf("OKAY STUPID: u[%s] v[%s] kingID[%s]\n", u, v, g.Wink.KingID)
-    if v == g.Wink.KingID {
+    if u == g.Wink.KingID {
+      continue
+    } else if v == g.Wink.KingID {
       text_r += " -> " + g.Wink.NameList[u] + "\n"
     } else {
       if len(g.Wink.UserSelectionFinal[u]) == 0 {
@@ -109,7 +112,7 @@ func broadcastResults(s *dgo.Session, g *data.Guild) {
   text += "\n**왕을 틀리게 찍은 사람:**\n"
   text += text_w
 
-  data := dgo.MessageSend{
+  message := dgo.MessageSend{
     Embeds: []*dgo.MessageEmbed{ 
       {
         Title:        "게임 종료!!!",
@@ -121,8 +124,15 @@ func broadcastResults(s *dgo.Session, g *data.Guild) {
 
   // ignore array index
   for _, i := range players {
-    general.SendComplexDM(s, i, &data)
+    general.SendComplexDM(s, i, &message)
   }
+
+  g.Wink.State = data.ENDED
   
-  // TODO: add a announcement to guild chat as well (with reset buttons as well)
+  announceToGuild()
+}
+
+// TODO: add a announcement to guild chat as well (with reset buttons as well)
+func announceToGuild() {
+
 }

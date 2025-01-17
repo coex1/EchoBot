@@ -35,8 +35,8 @@ func Game_submitButton(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Gui
 
   // if end conditions are not met, broadcast game status to players
   go func() {
-    if checkEndCondition(s, guild) == false {
-      broadcastGameStatus(s, guild, i.User.GlobalName)
+    if end_checkEndCondition(s, guild) == false {
+      game_broadcastGameStatus(s, guild, i.User.GlobalName)
     }
   }()
 }
@@ -56,15 +56,15 @@ func Game_submitKingButton(s *dgo.Session, i *dgo.InteractionCreate, guild *data
 
   // if end conditions are not met, broadcast game status to players
   go func() {
-    if checkEndCondition(s, guild) == false {
-      broadcastGameStatus(s, guild, i.User.GlobalName)
+    if end_checkEndCondition(s, guild) == false {
+      game_broadcastGameStatus(s, guild, i.User.GlobalName)
     }
   }()
 }
 
 // send everyone a message about current game status
 // (i.e. who is left to receive a wink)
-func broadcastGameStatus(s *dgo.Session, guild *data.Guild, u string) {
+func game_broadcastGameStatus(s *dgo.Session, guild *data.Guild, u string) {
   var players []string = guild.Wink.SelectedUsersID
   var text_voted string = ""
   var text_not string = ""
@@ -81,7 +81,7 @@ func broadcastGameStatus(s *dgo.Session, guild *data.Guild, u string) {
   text += "투포 한 사람:\n" + text_voted
   text += "\n투포 안한 사람:\n" + text_not
 
-  data := dgo.MessageSend{
+  message := dgo.MessageSend{
     Embeds: []*dgo.MessageEmbed{ 
       {
         Title:        "[ " + u + " ]님이 투표하셨습니다!",
@@ -92,6 +92,6 @@ func broadcastGameStatus(s *dgo.Session, guild *data.Guild, u string) {
   }
 
   for _, i := range players {
-    general.SendComplexDM(s, i, &data)
+    general.SendComplexDM(s, i, &message)
   }
 }
