@@ -15,7 +15,10 @@ import (
 func Start_buttonPressed(s *dgo.Session, i *dgo.InteractionCreate, g *data.Guild) {
   var players []string = g.Wink.SelectedUsersID
   var count int = len(players)
-	var list []dgo.SelectMenuOption
+
+  if g.Wink.State != data.INITIATED {
+    return
+  }
 
   // check if player count is valid
   if len(players) < MIN_PLAYER_CNT {
@@ -24,24 +27,19 @@ func Start_buttonPressed(s *dgo.Session, i *dgo.InteractionCreate, g *data.Guild
     return
   }
 
-  resetPart(g) // reset only parts of the game
 	g.Wink.TotalParticipants = count
 
   // create list, for menu, for users to select who they think is the king
   for _, v := range players {
     log.Printf("Player [%s] is included in the game\n", g.Wink.NameList[v])
-    
-    // initializing arrays
-    g.Wink.ConfirmedUsers[v] = false
-    g.Wink.UserSelectionFinal[v] = ""
 
-    list = append(list, dgo.SelectMenuOption{
+    g.Wink.TargetList = append(g.Wink.TargetList, dgo.SelectMenuOption{
       Label: g.Wink.NameList[v],
       Value: v,
     })
   }
 
-  Start_Game(s, i, g, list)
+  Start_Game(s, i, g)
 }
 
 // on start fail
@@ -62,15 +60,26 @@ func start_sendFailedResponse(s *dgo.Session, i *dgo.InteractionCreate, cause st
 	}
 }
 
-func Start_Game(s *dgo.Session, i *dgo.InteractionCreate, g *data.Guild, list []dgo.SelectMenuOption) {
+func Start_Game(s *dgo.Session, i *dgo.InteractionCreate, g *data.Guild) {
   var players []string = g.Wink.SelectedUsersID
+
+  if g.Wink.State != data.INITIATED && g.Wink.State != data.ENDED {
+    return
+  }
+
+  resetPart(g) // reset only session data
+  for _, v := range g.Wink.SelectedUsersID {
+    // initializing arrays
+    g.Wink.ConfirmedUsers[v] = false
+    g.Wink.UserSelectionFinal[v] = ""
+  }
 
   // select king
   g.Wink.KingID = players[general.Random(0, len(players)-1)]
   log.Printf("User [%s] has been selected as this round's king!\n", g.Wink.NameList[g.Wink.KingID])
 
   // send role notice via private DMs
-  start_sendPlayersRoleNotices(s, g, list)
+  start_sendPlayersRoleNotices(s, g)
 
   // send channel control menu message
   start_sendChannelControlMenuResponse(s, i)
@@ -80,7 +89,7 @@ func Start_Game(s *dgo.Session, i *dgo.InteractionCreate, g *data.Guild, list []
 
 // notify all users of their roles
 // and send select menu and confirm button to all users
-func start_sendPlayersRoleNotices(s *dgo.Session, g *data.Guild, list []dgo.SelectMenuOption) {
+func start_sendPlayersRoleNotices(s *dgo.Session, g *data.Guild) {
   var min int = 1
 
   // data for king
@@ -129,7 +138,7 @@ func start_sendPlayersRoleNotices(s *dgo.Session, g *data.Guild, list []dgo.Sele
             Placeholder:  "사용자 목록",
             MinValues:    &min,
             MaxValues:    1,
-            Options:      list,
+            Options:      g.Wink.TargetList,
           },
         },
       },

@@ -6,6 +6,9 @@ import (
 
   // internal packages
   "github.com/coex1/EchoBot/internal/data"
+
+  // external packages
+  dgo "github.com/bwmarrin/discordgo"
 )
 
 // reset all global variables
@@ -19,15 +22,14 @@ func resetGame(g *data.Guild) {
   g.Wink.SelectedUsersID = make([]string, 0)
   g.Wink.TotalParticipants = 0
 
+  g.Wink.TargetList = make([]dgo.SelectMenuOption, 0)  // a menu list of players to select
+
   resetPart(g)
 }
 
 // reset all session variables
 func resetPart(g *data.Guild) {
   log.Printf("Resetting session data\n")
-
-	g.Wink.ConfirmedUsers = make(map[string]bool)
-  g.Wink.ConfirmedCount = 0
 
 	g.Wink.ConfirmedUsers = make(map[string]bool)
   g.Wink.ConfirmedCount = 0

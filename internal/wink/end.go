@@ -129,10 +129,15 @@ func end_broadcastResults(s *dgo.Session, g *data.Guild) {
 
   g.Wink.State = data.ENDED
   
-  announceToGuild()
+  end_announceToGuild()
 }
 
 // TODO: add a announcement to guild chat as well (with reset buttons as well)
-func announceToGuild() {
+func end_announceToGuild() {
 
+}
+
+// for when ending the game forcibly
+func End_Game(g *data.Guild) {
+  resetGame(g)
 }

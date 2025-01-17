@@ -14,50 +14,62 @@ import (
 
 // on interaction event 'wink_norm_list'
 func Game_listUpdate(i *dgo.InteractionCreate, g *data.Guild) {
+  if g.Wink.State != data.IN_PROGRESS && g.Wink.State != data.LAST_PLAYER {
+    return
+  }
+
   g.Wink.UserSelection[i.User.ID] = i.MessageComponentData().Values[0]
 }
 
 // when players select their target
-func Game_submitButton(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
-  var target string = guild.Wink.UserSelection[i.User.ID]
+func Game_submitButton(s *dgo.Session, i *dgo.InteractionCreate, g *data.Guild) {
+  if g.Wink.State != data.IN_PROGRESS && g.Wink.State != data.LAST_PLAYER {
+    return
+  }
 
-  guild.Wink.UserSelectionFinal[i.User.ID] = target
-  log.Printf("User [%s] has selected user [%s] as their target", i.User.GlobalName, guild.NameList[target])
+  var target string = g.Wink.UserSelection[i.User.ID]
 
-	if guild.Wink.ConfirmedUsers[i.User.ID] == true {
+  g.Wink.UserSelectionFinal[i.User.ID] = target
+  log.Printf("User [%s] has selected user [%s] as their target", i.User.GlobalName, g.NameList[target])
+
+	if g.Wink.ConfirmedUsers[i.User.ID] == true {
     return
   }
 
   // increase total confirmed target count
-  guild.Wink.ConfirmedUsers[i.User.ID] = true
-  guild.Wink.ConfirmedCount++
-  log.Printf("Confirmed user count [%d/%d]", guild.Wink.ConfirmedCount, guild.Wink.TotalParticipants)
+  g.Wink.ConfirmedUsers[i.User.ID] = true
+  g.Wink.ConfirmedCount++
+  log.Printf("Confirmed user count [%d/%d]", g.Wink.ConfirmedCount, g.Wink.TotalParticipants)
 
   // if end conditions are not met, broadcast game status to players
   go func() {
-    if end_checkEndCondition(s, guild) == false {
-      game_broadcastGameStatus(s, guild, i.User.GlobalName)
+    if end_checkEndCondition(s, g) == false {
+      game_broadcastGameStatus(s, g, i.User.GlobalName)
     }
   }()
 }
 
 // when the king presses their fake button
-func Game_submitKingButton(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
+func Game_submitKingButton(s *dgo.Session, i *dgo.InteractionCreate, g *data.Guild) {
+  if g.Wink.State != data.IN_PROGRESS && g.Wink.State != data.LAST_PLAYER {
+    return
+  }
+
   log.Printf("King [%s] has pressed the fake button", i.User.GlobalName)
 
-	if guild.Wink.ConfirmedUsers[i.User.ID] == true {
+	if g.Wink.ConfirmedUsers[i.User.ID] == true {
     return
   }
 
   // increase total confirmed target count
-  guild.Wink.ConfirmedUsers[i.User.ID] = true
-  guild.Wink.ConfirmedCount++
-  log.Printf("Confirmed user count [%d/%d]", guild.Wink.ConfirmedCount, guild.Wink.TotalParticipants)
+  g.Wink.ConfirmedUsers[i.User.ID] = true
+  g.Wink.ConfirmedCount++
+  log.Printf("Confirmed user count [%d/%d]", g.Wink.ConfirmedCount, g.Wink.TotalParticipants)
 
   // if end conditions are not met, broadcast game status to players
   go func() {
-    if end_checkEndCondition(s, guild) == false {
-      game_broadcastGameStatus(s, guild, i.User.GlobalName)
+    if end_checkEndCondition(s, g) == false {
+      game_broadcastGameStatus(s, g, i.User.GlobalName)
     }
   }()
 }
