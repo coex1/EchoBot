@@ -1,10 +1,5 @@
 package data
 
-import (
-  // external packages
-  dgo "github.com/bwmarrin/discordgo"
-)
-
 // game states
 const (
   NONE = iota + 0
@@ -15,32 +10,19 @@ const (
 )
 
 type Wink struct {
-  // game state
-  State             int
+  State               int               // game state
 
-  // all user detail
-	AllUserInfo       []dgo.SelectMenuOption
+  NameList            map[string]string // list of every possible player
+  MaxPossiblePlayers  int
+	SelectedUsersID     []string          // users selected to play the game
+	TotalParticipants   int
 
-  // all selected detail
-	SelectedUsersInfo []dgo.SelectMenuOption
+	ConfirmedUsers      map[string]bool   // users that have confirmed their target (ID -> BOOL)
+  ConfirmedCount      int
 
-  // users selected to play the game
-	SelectedUsersID   []string
+  KingID              string            // king's ID
+  FinalPlayerID       string            // final player
 
-  // users that have confirmed their target
-	ConfirmedUsers    map[string]bool
-  ConfirmedCount    int
-
-  // kingID
-  KingID string
-  KingName string
-
-  MasterList map[string]string
-
-	CheckedUsers      map[string]bool
-	TotalParticipants int
-	MessageIDMap      map[string]string
-
-	UserSelection     map[string]string
-	UserSelectionFinal     map[string]string
+	UserSelection       map[string]string // player's selection (ID -> ID)
+	UserSelectionFinal  map[string]string // player's final selection (ID -> ID)
 }

@@ -12,60 +12,41 @@ import (
   dgo "github.com/bwmarrin/discordgo"
 )
 
-// on interaction event 'wink_Start_listUpdate'
-// update selected user list
-func Start_listUpdate(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Guild) {
-  guild.Wink.SelectedUsersID = event.MessageComponentData().Values
-}
-
-// TODO: split start and reset
-// on interaction event 'wink_Start_Button' and 'wink_reset'
-func Start_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
-  players := guild.Wink.SelectedUsersID
+func Start_buttonPressed(s *dgo.Session, i *dgo.InteractionCreate, g *data.Guild) {
+  var players []string = g.Wink.SelectedUsersID
+  var count int = len(players)
+	var list []dgo.SelectMenuOption
 
   // check if player count is valid
   if len(players) < MIN_PLAYER_CNT {
     log.Printf("Invalid player count, ending game")
-    Start_Failed(s, i, guild, "인원수가 부족")
+    start_sendFailedResponse(s, i, "인원수가 부족")
     return
   }
-	guild.Wink.TotalParticipants = len(players)
 
-  for _, u := range guild.Wink.AllUserInfo {
-    isPart := false
+  resetPart(g) // reset only parts of the game
+	g.Wink.TotalParticipants = count
 
-    for _, a := range guild.Wink.SelectedUsersID {
-      if u.Value == a {
-        isPart = true
-        break
-      }
-    }
+  // create list, for menu, for users to select who they think is the king
+  for _, v := range players {
+    log.Printf("Player [%s] is included in the game\n", g.Wink.NameList[v])
+    
+    // initializing arrays
+    g.Wink.ConfirmedUsers[v] = false
+    g.Wink.UserSelectionFinal[v] = ""
 
-    if isPart {
-      guild.Wink.ConfirmedUsers[u.Label] = false // initialize array
-
-      log.Printf("comparing values [%s] [%s]", u.Label, u.Value)
-      guild.Wink.SelectedUsersInfo = append(guild.Wink.SelectedUsersInfo, dgo.SelectMenuOption{
-        Label: u.Label,
-        Value: u.Label,
-      })
-    }
+    list = append(list, dgo.SelectMenuOption{
+      Label: g.Wink.NameList[v],
+      Value: v,
+    })
   }
 
-  // select king
-  guild.Wink.KingID = selectKing(players)
-  guild.Wink.KingName = guild.Wink.MasterList[guild.Wink.KingID]
-
-  // send role notice via private DM
-  sendPlayersStartMessage(s, guild, players, guild.Wink.KingID)
-
-  // send FollowUp message
-  Game_FollowUpMessage(s, i, guild)
+  Start_Game(s, i, g, list)
 }
 
 // on start fail
-func Start_Failed(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild, cause string) {
-  _, err := s.FollowupMessageCreate(i.Interaction, true, &dgo.WebhookParams{
+func start_sendFailedResponse(s *dgo.Session, i *dgo.InteractionCreate, cause string) {
+  var embed *dgo.WebhookParams = &dgo.WebhookParams{
     Embeds: []*dgo.MessageEmbed{ 
       {
         Title:        "게임 시작 실패!",
@@ -73,84 +54,91 @@ func Start_Failed(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild, c
         Color:        0xFF0000,
       },
     },
-  })
+  }
+
+  _, err := s.FollowupMessageCreate(i.Interaction, true, embed)
   if err != nil {
     log.Printf("Failed sending follow-up message [%v]", err)
 	}
 }
 
-// 사용자 목록에서 왕 선택
-func selectKing(players []string) (kingID string){
-	kingID = players[general.Random(0, len(players)-1)]
-  log.Printf("Selected king! [%s]", kingID)
-  return
+func Start_Game(s *dgo.Session, i *dgo.InteractionCreate, g *data.Guild, list []dgo.SelectMenuOption) {
+  var players []string = g.Wink.SelectedUsersID
+
+  // select king
+  g.Wink.KingID = players[general.Random(0, len(players)-1)]
+  log.Printf("User [%s] has been selected as this round's king!\n", g.Wink.NameList[g.Wink.KingID])
+
+  // send role notice via private DMs
+  start_sendPlayersRoleNotices(s, g, list)
+
+  // send channel control menu message
+  start_sendChannelControlMenuResponse(s, i)
+
+  g.Wink.State = data.IN_PROGRESS
 }
 
-// 역할 공지 및 선택 메뉴!
-// send select menu and confirm button to all users
-func sendPlayersStartMessage(s *dgo.Session, guild *data.Guild, players []string, kingID string) {
-  var minVal int = 1
-
-  embedKing := dgo.MessageEmbed{
-    Title:        "당신은 왕입니다!",
-    Description:  "시민 한 사람을 제외한 나머지 사람들에게 윙크를 주세요!\n" +
-                  "다른 시민들에게 들키지 않게, 당신도 시민들이 윙크 받았을 때 클릭하는 '제출' 버튼이 있습니다.\n" +
-                  "언제든지 윙크 받은 척 하시면서 '제출' 버튼을 클릭 해 주세요.\n" +
-                  "(만약 마지막으로 '제출' 버튼을 클릭 하시면 당신의 패배입니다 -.-)\n",
-    Color:        0xFFD800,
-  }
+// notify all users of their roles
+// and send select menu and confirm button to all users
+func start_sendPlayersRoleNotices(s *dgo.Session, g *data.Guild, list []dgo.SelectMenuOption) {
+  var min int = 1
 
   // data for king
-  dataKing := dgo.MessageSend{
-    Embeds: []*dgo.MessageEmbed{ 
-      &embedKing,
+  data_King := dgo.MessageSend{
+    Embeds: []*dgo.MessageEmbed{
+      {
+        Title:        "당신은 왕입니다!",
+        Description:  "시민 한 사람을 제외한 나머지 사람들에게 윙크를 주세요!\n" +
+        "다른 시민들에게 들키지 않게, 당신도 시민들이 윙크 받았을 때 클릭하는 '제출' 버튼이 있습니다.\n" +
+        "언제든지 윙크 받은 척 하시면서 '제출' 버튼을 클릭 해 주세요.\n" +
+        "(만약 마지막으로 '제출' 버튼을 클릭 하시면 당신의 패배입니다 -.-)\n",
+        Color:        0xFFD800,
+      },
     },
     Components: []dgo.MessageComponent{
       dgo.ActionsRow{
         Components: []dgo.MessageComponent{
           &dgo.Button{
-            Label:    "제출",                   // 버튼 텍스트
-            Style:    dgo.PrimaryButton,        // 버튼 스타일
-            CustomID: "wink_Game_submitFakeButton", // 버튼 클릭 시 처리할 ID
+            Label:    "제출",                    // 버튼 텍스트
+            Style:    dgo.PrimaryButton,         // 버튼 스타일
+            CustomID: "wink_submit_king_button", // 버튼 클릭 시 처리할 ID
           },
         },
       },
     },
   }
 
-  embedVil := dgo.MessageEmbed{
-    Title:        "당신은 시민입니다!",
-    Description:  "왕으로부터 윙크를 받으세요! (혹은 윙크 하는 것을 발견하세요 ^.-)\n" +
-                  "윙크 받으셨으면, 누가 왕인지 목록에서 선택하신 후 '제출' 버튼을 클릭 해 주세요!\n\n" +
-                  "참고: 윙크 받으셨으면, 주변 사람들의 눈을 계속 마주쳐 주세요!\n" +
-                  "폰을 계속 보고 있으면 뻔히 왕이 아닌것을 눈치치게 될테니....^^;\n",
-    Color:        0xC87C00,
-  }
-
   // data for villagers
-  dataVil := dgo.MessageSend{
+  data_Norm := dgo.MessageSend{
     Embeds: []*dgo.MessageEmbed{ 
-      &embedVil,
+      {
+        Title:        "당신은 시민입니다!",
+        Description:  "왕으로부터 윙크를 받으세요! (혹은 윙크 하는 것을 발견하세요 ^.-)\n" +
+        "윙크 받으셨으면, 누가 왕인지 목록에서 선택하신 후 '제출' 버튼을 클릭 해 주세요!\n\n" +
+        "참고: 윙크 받으셨으면, 주변 사람들의 눈을 계속 마주쳐 주세요!\n" +
+        "폰을 계속 보고 있으면 뻔히 왕이 아닌것을 눈치치게 될테니....^^;\n",
+        Color:        0xC87C00,
+      },
     },
     Components: []dgo.MessageComponent{
       dgo.ActionsRow{
         Components: []dgo.MessageComponent{
           &dgo.SelectMenu{
             MenuType:     dgo.SelectMenuType(dgo.SelectMenuComponent),
-            CustomID:     "wink_Game_listUpdate",
+            CustomID:     "wink_norm_list",
             Placeholder:  "사용자 목록",
-            MinValues:    &minVal,
+            MinValues:    &min,
             MaxValues:    1,
-            Options:      guild.Wink.SelectedUsersInfo,
+            Options:      list,
           },
         },
       },
       dgo.ActionsRow{
         Components: []dgo.MessageComponent{
           &dgo.Button{
-            Label:    "제출",                   // 버튼 텍스트
-            Style:    dgo.PrimaryButton,        // 버튼 스타일
-            CustomID: "wink_Game_submitButton", // 버튼 클릭 시 처리할 ID
+            Label:    "제출",                    // 버튼 텍스트
+            Style:    dgo.PrimaryButton,         // 버튼 스타일
+            CustomID: "wink_submit_norm_button", // 버튼 클릭 시 처리할 ID
           },
         },
       },
@@ -158,18 +146,18 @@ func sendPlayersStartMessage(s *dgo.Session, guild *data.Guild, players []string
   }
 
   // ignore array index
-  for _, i := range players {
-    if i == kingID {
-      general.SendComplexDM(s, i, &dataKing)
+  for _, p := range g.Wink.SelectedUsersID {
+    if p == g.Wink.KingID {
+      general.SendComplexDM(s, p, &data_King)
     } else {
-      general.SendComplexDM(s, i, &dataVil)
+      general.SendComplexDM(s, p, &data_Norm)
     }
   }
 }
 
-// send message to guild chat
-func Game_FollowUpMessage(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
-  msg, err := s.FollowupMessageCreate(i.Interaction, true, &dgo.WebhookParams{
+// send channel control menu message
+func start_sendChannelControlMenuResponse(s *dgo.Session, i *dgo.InteractionCreate) {
+  var embed *dgo.WebhookParams = &dgo.WebhookParams{
     Embeds: []*dgo.MessageEmbed{ 
       {
         Title:        "게임은 시작되었습니다",
@@ -183,7 +171,7 @@ func Game_FollowUpMessage(s *dgo.Session, i *dgo.InteractionCreate, guild *data.
         Components: []dgo.MessageComponent{
           &dgo.Button{
             Label:    "게임 재시작",
-            Style:    dgo.SuccessButton,
+            Style:    dgo.PrimaryButton,
             CustomID: "wink_restart",
           },
           &dgo.Button{
@@ -194,12 +182,10 @@ func Game_FollowUpMessage(s *dgo.Session, i *dgo.InteractionCreate, guild *data.
         },
       },
     },
-  })
-  
+  }
+
+  _, err := s.FollowupMessageCreate(i.Interaction, true, embed)
   if err != nil {
-    log.Printf("Failed sending follow-up message [%v]", err)
+    log.Printf("Failed sending a FollowUp message [%v]", err)
 	}
-
-  guild.Wink.MessageIDMap[i.GuildID] = msg.ID
 }
-
