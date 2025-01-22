@@ -1,11 +1,11 @@
 package discord
 
 import (
-  // system packages
-  "log"
+	// system packages
+	"log"
 
-  // external packages
-  dgo "github.com/bwmarrin/discordgo"
+	// external packages
+	dgo "github.com/bwmarrin/discordgo"
 )
 
 // list of commands this bot will register
@@ -14,31 +14,31 @@ var cmdList = []*dgo.ApplicationCommand{
 		Name:        "wink",
 		Description: "윙크게임 시작하기!",
 	},
-  {
-    Name:        "mafia",
-    Description: "마피아 게임 시작하기!",
-    Options: []*dgo.ApplicationCommandOption{
-      {
-        Name:        "마피아",
-        Description: "Number of Mafia players",
-        Type:        dgo.ApplicationCommandOptionInteger,
-        Required:    true,
-      },
-      {
-        Name:        "경찰",
-        Description: "Number of Police players",
-        Type:        dgo.ApplicationCommandOptionInteger,
-        Required:    true,
-      },
-      {
-        Name:        "의사",
-        Description: "Number of Doctor players",
-        Type:        dgo.ApplicationCommandOptionInteger,
-        Required:    true,
-      },
-    },
-  },
-  {
+	{
+		Name:        "mafia",
+		Description: "마피아 게임 시작하기!",
+		Options: []*dgo.ApplicationCommandOption{
+			{
+				Name:        "마피아",
+				Description: "Number of Mafia players",
+				Type:        dgo.ApplicationCommandOptionInteger,
+				Required:    true,
+			},
+			{
+				Name:        "경찰",
+				Description: "Number of Police players",
+				Type:        dgo.ApplicationCommandOptionInteger,
+				Required:    true,
+			},
+			{
+				Name:        "의사",
+				Description: "Number of Doctor players",
+				Type:        dgo.ApplicationCommandOptionInteger,
+				Required:    true,
+			},
+		},
+	},
+	{
 		Name:        "echo",
 		Description: "test command",
 	},

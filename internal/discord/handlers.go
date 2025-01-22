@@ -35,6 +35,9 @@ func RegisterHandlers(s *dgo.Session, guild *data.Guild) {
 			case "wink":
 				wink.CommandHandle(s, event, guild)
 			case "mafia":
+				guild.Mafia.NumMafia = int(event.ApplicationCommandData().Options[0].IntValue())
+				guild.Mafia.NumPolice = int(event.ApplicationCommandData().Options[1].IntValue())
+				guild.Mafia.NumDoctor = int(event.ApplicationCommandData().Options[2].IntValue())
 				mafia.CommandHandle(s, event, guild)
 			}
 
@@ -129,10 +132,7 @@ func RegisterHandlers(s *dgo.Session, guild *data.Guild) {
 				wink.Start_Button(s, event, guild)
 
 			case "mafia_Start_listUpdate":
-				// send response that event has been received and was acknowledged
 				err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
-					// Acknowledge that the event has been received,
-					// and will be updating the previous message later
 					Type: dgo.InteractionResponseDeferredMessageUpdate,
 				})
 				if err != nil {
@@ -141,11 +141,8 @@ func RegisterHandlers(s *dgo.Session, guild *data.Guild) {
 				}
 				mafia.Start_listUpdate(s, event, guild)
 
-			case "mafia_Start_button":
-				// send response that event has been received and was acknowledged
+			case "mafia_Start_Button":
 				err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
-					// Acknowledge that the event has been received,
-					// and will be updating the previous message later
 					Type: dgo.InteractionResponseDeferredMessageUpdate,
 				})
 				if err != nil {

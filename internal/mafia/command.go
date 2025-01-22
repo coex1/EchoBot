@@ -36,7 +36,7 @@ func CommandHandle(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Gui
 			Value: m.User.ID,
 		})
 
-		guild.Mafia.MasterList[m.User.ID] = m.User.GlobalName
+		// guild.Mafia.MasterList[m.User.ID] = m.User.GlobalName
 	}
 
 	// 드롭다운 메뉴와 버튼을 포함한 메시지 전송
@@ -68,7 +68,7 @@ func CommandHandle(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Gui
 				dgo.ActionsRow{
 					Components: []dgo.MessageComponent{
 						&dgo.Button{
-							CustomID: "mafia_Start_button", // 버튼 클릭 시 처리할 ID
+							CustomID: "mafia_Start_Button", // 버튼 클릭 시 처리할 ID
 							Label:    "게임시작",               // 버튼 텍스트
 							Style:    dgo.PrimaryButton,    // 버튼 스타일
 						},

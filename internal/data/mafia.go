@@ -3,7 +3,12 @@ package data
 import dgo "github.com/bwmarrin/discordgo"
 
 type Mafia struct {
-	MasterList map[string]string
+	NumMafia  int
+	NumPolice int
+	NumDoctor int
+
+	// day : 0 | night : 1
+	State int
 
 	// all user detail
 	AllUserInfo []dgo.SelectMenuOption
