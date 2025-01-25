@@ -3,18 +3,27 @@ package data
 import dgo "github.com/bwmarrin/discordgo"
 
 type Mafia struct {
+	// both
+	SelectedUsersID []string // ID
+
+	// start
 	NumMafia  int
 	NumPolice int
 	NumDoctor int
 
-	// day : 0 | night : 1
-	State int
+	MessageIDMap map[string]string
 
-	// all user detail
-	AllUserInfo []dgo.SelectMenuOption
+	AllUserInfo []dgo.SelectMenuOption // 이름 : ID
 
-	// users selected to play the game
-	SelectedUsersID []string
+	// in-game
+	Timer int
+
+	State bool // day : 1 | night : 0
+
+	VoteList  map[string]string // ID : Vote_ID
+	VoteCount map[string]int    // ID : Vote
+
+	AliveUserInfo []dgo.SelectMenuOption
 
 	MafiaList   []string
 	PoliceList  []string

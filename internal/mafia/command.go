@@ -35,8 +35,6 @@ func CommandHandle(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Gui
 			Label: m.User.GlobalName,
 			Value: m.User.ID,
 		})
-
-		// guild.Mafia.MasterList[m.User.ID] = m.User.GlobalName
 	}
 
 	// 드롭다운 메뉴와 버튼을 포함한 메시지 전송
@@ -46,9 +44,9 @@ func CommandHandle(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Gui
 			Embeds: []*dgo.MessageEmbed{
 				{
 					Title: "게임 참여자 선택!",
-					Description: "게임에 참석할 사용자들을 선택해 주세요.\n" +
-						"최소 5명 이상이 선택 되어야 게임이 가능합니다.\n" +
-						"선택 하셨으면 '게임시작' 버튼을 클릭 해 주세요.",
+					Description: "게임에 참석할 사용자들을 선택해 주세요.\n\n" +
+						"**최소 5명** 이상이 선택 되어야 게임이 가능합니다.\n\n" +
+						"선택 하셨으면 **게임시작** 버튼을 클릭 해 주세요.",
 					Color: 0x2AFF00,
 				},
 			},
