@@ -12,15 +12,25 @@ import (
 )
 
 // 드롭다운 선택 시 실행
-func Start_listUpdate(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
+func Start_listUpdate(i *dgo.InteractionCreate, guild *data.Guild) {
 	guild.Mafia.SelectedUsersID = i.MessageComponentData().Values
 }
 
 // on interaction event 'mafia_Start_Button'
 func Start_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
+	// Init
+	guild.Mafia.State = true
+	guild.Mafia.UserDMChannels = make(map[string]string)
+	guild.Mafia.VoteMap = make(map[string]string)
+	guild.Mafia.VoteCount = make(map[string]int)
+
 	players := guild.Mafia.SelectedUsersID
 
-	guild.Mafia.AliveUserInfo = guild.Mafia.AllUserInfo
+	for _, id := range players {
+		guild.Mafia.UserDMChannels[id] = ""
+	}
+
+	guild.Mafia.AliveUsersID = guild.Mafia.SelectedUsersID
 
 	var numMafia = guild.Mafia.NumMafia
 	var numPolice = guild.Mafia.NumPolice
@@ -35,14 +45,16 @@ func Start_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
 		return
 	}
 
-	mafiaIDs, policeIDs, doctorIDs, citizenIDs := sendPlayersStartMessage(s, guild, players, numMafia, numPolice, NumDoctor)
+	mafiaIDs, policeIDs, doctorIDs, citizenIDs :=
+		sendStartMessage(s, guild, players, numMafia, numPolice, NumDoctor)
 
 	guild.Mafia.MafiaList = mafiaIDs
 	guild.Mafia.PoliceList = policeIDs
 	guild.Mafia.DoctorList = doctorIDs
 	guild.Mafia.CitizenList = citizenIDs
 
-	Game_StartMessage(s, i, guild)
+	//
+	Start_Message(s, i, guild)
 
-	// Game_timeUpdate(s, i, players)
+	Vote_Message(s, i, guild, players)
 }

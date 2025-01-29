@@ -139,7 +139,7 @@ func RegisterHandlers(s *dgo.Session, guild *data.Guild) {
 					log.Printf("Response to interaction failed [%v]", err)
 					return
 				}
-				mafia.Start_listUpdate(s, event, guild)
+				mafia.Start_listUpdate(event, guild)
 
 			case "mafia_Start_Button":
 				err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
@@ -150,8 +150,37 @@ func RegisterHandlers(s *dgo.Session, guild *data.Guild) {
 					return
 				}
 				mafia.Start_Button(s, event, guild)
-			}
 
+			case "mafia_Vote_listUpdate":
+				err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
+					Type: dgo.InteractionResponseDeferredMessageUpdate,
+				})
+				if err != nil {
+					log.Printf("Response to interaction failed [%v]", err)
+					return
+				}
+				mafia.Vote_listUpdate(event, guild)
+
+			case "mafia_Vote_Select":
+				err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
+					Type: dgo.InteractionResponseDeferredMessageUpdate,
+				})
+				if err != nil {
+					log.Printf("Response to interaction failed [%v]", err)
+					return
+				}
+				mafia.Vote_Button(s, event, guild)
+
+			case "mafia_Vote_Submit":
+				err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
+					Type: dgo.InteractionResponseDeferredMessageUpdate,
+				})
+				if err != nil {
+					log.Printf("Response to interaction failed [%v]", err)
+					return
+				}
+				mafia.Vote_Submit(s, event, guild)
+			}
 			log.Printf("Finished '%s' handle", customID)
 		}
 	})

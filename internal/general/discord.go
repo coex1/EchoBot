@@ -1,55 +1,78 @@
 package general
 
 import (
-  // system packages
+	// system packages
 	"log"
 
-  // external packages
-  dgo "github.com/bwmarrin/discordgo"
+	// external packages
+	dgo "github.com/bwmarrin/discordgo"
 )
 
 // send a DM(Direct Message) to the user
-func SendDM(s *dgo.Session, userID string, msg string) (*dgo.Message) {
+func SendDM(s *dgo.Session, userID string, msg string) *dgo.Message {
 	channel, e := s.UserChannelCreate(userID)
 
-  // check if creating a channel with the user failed
+	// check if creating a channel with the user failed
 	if e != nil {
 		log.Printf("Failed creating a direct user channel [%v]", e)
 		return nil
 	}
 
-  m, e := s.ChannelMessageSend(channel.ID, msg)
+	m, e := s.ChannelMessageSend(channel.ID, msg)
 
-  // check if sending a DM failed
-  if e != nil {
-    log.Printf("Failed sending DM [%v]", e)
-    return nil
-  }
+	// check if sending a DM failed
+	if e != nil {
+		log.Printf("Failed sending DM [%v]", e)
+		return nil
+	}
 
-  log.Printf("Sent message to user [%s]", userID)
+	log.Printf("Sent message to user [%s]", userID)
 
-  return m
+	return m
 }
 
 // send a complex DM(Direct Message) to the user
-func SendComplexDM(s *dgo.Session, userID string, data *dgo.MessageSend) (*dgo.Message) {
+func SendComplexDM(s *dgo.Session, userID string, data *dgo.MessageSend) *dgo.Message {
 	channel, e := s.UserChannelCreate(userID)
 
-  // check if creating a channel with the user failed
+	// check if creating a channel with the user failed
 	if e != nil {
 		log.Printf("Failed creating a direct user channel [%v]", e)
 		return nil
 	}
 
-  m, e := s.ChannelMessageSendComplex(channel.ID, data)
+	m, e := s.ChannelMessageSendComplex(channel.ID, data)
 
-  // check if sending a DM failed
-  if e != nil {
-    log.Printf("Failed sending DM [%v]", e)
-    return nil
-  }
+	// check if sending a DM failed
+	if e != nil {
+		log.Printf("Failed sending DM [%v]", e)
+		return nil
+	}
 
-  log.Printf("Sent message to user [%s]", userID)
+	log.Printf("Sent message to user [%s]", userID)
 
-  return m
+	return m
+}
+
+// send a complex DM(Direct Message) to the user
+func SendComplexDM2(s *dgo.Session, userID string, data *dgo.MessageSend) (*dgo.Message, string) {
+	channel, e := s.UserChannelCreate(userID)
+
+	// check if creating a channel with the user failed
+	if e != nil {
+		log.Printf("Failed creating a direct user channel [%v]", e)
+		return nil, ""
+	}
+
+	m, e := s.ChannelMessageSendComplex(channel.ID, data)
+
+	// check if sending a DM failed
+	if e != nil {
+		log.Printf("Failed sending DM [%v]", e)
+		return nil, ""
+	}
+
+	log.Printf("Sent message to user [%s]", userID)
+
+	return m, channel.ID
 }
