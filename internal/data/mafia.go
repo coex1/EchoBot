@@ -17,6 +17,8 @@ type Mafia struct {
 
 	UserDMChannels map[string]string
 
+	ReadyID []string
+
 	// in-game
 	Timer int
 

@@ -67,7 +67,7 @@ func CommandHandle(s *dgo.Session, event *dgo.InteractionCreate, guild *data.Gui
 					Components: []dgo.MessageComponent{
 						&dgo.Button{
 							CustomID: "mafia_Start_Button", // 버튼 클릭 시 처리할 ID
-							Label:    "게임시작",               // 버튼 텍스트
+							Label:    "역할 배정",              // 버튼 텍스트
 							Style:    dgo.PrimaryButton,    // 버튼 스타일
 						},
 					},

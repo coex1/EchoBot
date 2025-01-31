@@ -161,7 +161,7 @@ func RegisterHandlers(s *dgo.Session, guild *data.Guild) {
 				}
 				mafia.Vote_listUpdate(event, guild)
 
-			case "mafia_Vote_Select":
+			case "mafia_Vote_Button":
 				err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
 					Type: dgo.InteractionResponseDeferredMessageUpdate,
 				})
@@ -171,7 +171,7 @@ func RegisterHandlers(s *dgo.Session, guild *data.Guild) {
 				}
 				mafia.Vote_Button(s, event, guild)
 
-			case "mafia_Vote_Submit":
+			case "mafia_Rdy_Button":
 				err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
 					Type: dgo.InteractionResponseDeferredMessageUpdate,
 				})
@@ -179,7 +179,7 @@ func RegisterHandlers(s *dgo.Session, guild *data.Guild) {
 					log.Printf("Response to interaction failed [%v]", err)
 					return
 				}
-				mafia.Vote_Submit(s, event, guild)
+				mafia.Rdy_Button(s, event, guild)
 			}
 			log.Printf("Finished '%s' handle", customID)
 		}

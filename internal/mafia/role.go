@@ -30,22 +30,17 @@ func sendStartMessage(s *dgo.Session, guild *data.Guild, players []string, numMa
 		Embeds: []*dgo.MessageEmbed{
 			&embedMafia,
 		},
-		// Components: []dgo.MessageComponent{
-		// 	dgo.ActionsRow{
-		// 		Components: []dgo.MessageComponent{
-		// 			&dgo.Button{
-		// 				Label:    "Skill",             // 버튼 텍스트
-		// 				Style:    dgo.PrimaryButton,   // 버튼 스타일
-		// 				CustomID: "mafia_Skill_Mafia", // 버튼 클릭 시 처리할 ID
-		// 			},
-		// 			&dgo.Button{
-		// 				Label:    "Vote",              // 버튼 텍스트
-		// 				Style:    dgo.DangerButton,    // 버튼 스타일
-		// 				CustomID: "mafia_Vote_Button", // 버튼 클릭 시 처리할 ID
-		// 			},
-		// 		},
-		// 	},
-		// },
+		Components: []dgo.MessageComponent{
+			dgo.ActionsRow{
+				Components: []dgo.MessageComponent{
+					&dgo.Button{
+						Label:    "준비 완료",
+						Style:    dgo.PrimaryButton,
+						CustomID: "mafia_Rdy_Button",
+					},
+				},
+			},
+		},
 	}
 
 	// embed for Police
@@ -59,22 +54,17 @@ func sendStartMessage(s *dgo.Session, guild *data.Guild, players []string, numMa
 		Embeds: []*dgo.MessageEmbed{
 			&embedPolice,
 		},
-		// Components: []dgo.MessageComponent{
-		// 	dgo.ActionsRow{
-		// 		Components: []dgo.MessageComponent{
-		// 			&dgo.Button{
-		// 				Label:    "Skill",              // 버튼 텍스트
-		// 				Style:    dgo.PrimaryButton,    // 버튼 스타일
-		// 				CustomID: "mafia_Skill_Police", // 버튼 클릭 시 처리할 ID
-		// 			},
-		// 			&dgo.Button{
-		// 				Label:    "Vote",              // 버튼 텍스트
-		// 				Style:    dgo.DangerButton,    // 버튼 스타일
-		// 				CustomID: "mafia_Vote_Button", // 버튼 클릭 시 처리할 ID
-		// 			},
-		// 		},
-		// 	},
-		// },
+		Components: []dgo.MessageComponent{
+			dgo.ActionsRow{
+				Components: []dgo.MessageComponent{
+					&dgo.Button{
+						Label:    "준비 완료",
+						Style:    dgo.PrimaryButton,
+						CustomID: "mafia_Rdy_Button",
+					},
+				},
+			},
+		},
 	}
 
 	// embed for Doctor
@@ -88,22 +78,17 @@ func sendStartMessage(s *dgo.Session, guild *data.Guild, players []string, numMa
 		Embeds: []*dgo.MessageEmbed{
 			&embedDoctor,
 		},
-		// Components: []dgo.MessageComponent{
-		// 	dgo.ActionsRow{
-		// 		Components: []dgo.MessageComponent{
-		// 			&dgo.Button{
-		// 				Label:    "Skill",               // 버튼 텍스트
-		// 				Style:    dgo.PrimaryButton,     // 버튼 스타일
-		// 				CustomID: "wmafia_Skill_Doctor", // 버튼 클릭 시 처리할 ID
-		// 			},
-		// 			&dgo.Button{
-		// 				Label:    "Vote",              // 버튼 텍스트
-		// 				Style:    dgo.DangerButton,    // 버튼 스타일
-		// 				CustomID: "mafia_Vote_Button", // 버튼 클릭 시 처리할 ID
-		// 			},
-		// 		},
-		// 	},
-		// },
+		Components: []dgo.MessageComponent{
+			dgo.ActionsRow{
+				Components: []dgo.MessageComponent{
+					&dgo.Button{
+						Label:    "준비 완료",
+						Style:    dgo.PrimaryButton,
+						CustomID: "mafia_Rdy_Button",
+					},
+				},
+			},
+		},
 	}
 
 	//embed for Citizen
@@ -117,22 +102,17 @@ func sendStartMessage(s *dgo.Session, guild *data.Guild, players []string, numMa
 		Embeds: []*dgo.MessageEmbed{
 			&embedCitizen,
 		},
-		// Components: []dgo.MessageComponent{
-		// 	dgo.ActionsRow{
-		// 		Components: []dgo.MessageComponent{
-		// 			&dgo.Button{
-		// 				Label:    "Skill",               // 버튼 텍스트
-		// 				Style:    dgo.PrimaryButton,     // 버튼 스타일
-		// 				CustomID: "mafia_Skill_Citizen", // 버튼 클릭 시 처리할 ID
-		// 			},
-		// 			&dgo.Button{
-		// 				Label:    "Vote",              // 버튼 텍스트
-		// 				Style:    dgo.PrimaryButton,   // 버튼 스타일
-		// 				CustomID: "mafia_Vote_Button", // 버튼 클릭 시 처리할 ID
-		// 			},
-		// 		},
-		// 	},
-		// },
+		Components: []dgo.MessageComponent{
+			dgo.ActionsRow{
+				Components: []dgo.MessageComponent{
+					&dgo.Button{
+						Label:    "준비 완료",
+						Style:    dgo.PrimaryButton,
+						CustomID: "mafia_Rdy_Button",
+					},
+				},
+			},
+		},
 	}
 
 	// shuffle algorithm
@@ -154,34 +134,29 @@ func sendStartMessage(s *dgo.Session, guild *data.Guild, players []string, numMa
 	for _, id := range players {
 		switch {
 		case general.Contains(mafiaIDs, id):
-			err, cid := general.SendComplexDM2(s, id, &dataMafia)
+			err := general.SendComplexDM(s, id, &dataMafia)
 			if err != nil {
 				log.Printf("Failed to send DM to user %s: %v\n", id, err)
 			}
-			guild.Mafia.UserDMChannels[id] = cid
 
 		case general.Contains(policeIDs, id):
-			err, cid := general.SendComplexDM2(s, id, &dataPolice)
+			err := general.SendComplexDM(s, id, &dataPolice)
 			if err != nil {
 				log.Printf("Failed to send DM to user %s: %v\n", id, err)
 			}
-			guild.Mafia.UserDMChannels[id] = cid
 
 		case general.Contains(doctorIDs, id):
-			err, cid := general.SendComplexDM2(s, id, &dataDoctor)
+			err := general.SendComplexDM(s, id, &dataDoctor)
 			if err != nil {
 				log.Printf("Failed to send DM to user %s: %v\n", id, err)
 			}
-			guild.Mafia.UserDMChannels[id] = cid
 
 		default:
-			err, cid := general.SendComplexDM2(s, id, &dataCitizen)
+			err := general.SendComplexDM(s, id, &dataCitizen)
 			if err != nil {
 				log.Printf("Failed to send DM to user %s: %v\n", id, err)
 			}
-			guild.Mafia.UserDMChannels[id] = cid
 		}
 	}
-
 	return
 }

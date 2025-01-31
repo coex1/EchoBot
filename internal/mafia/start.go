@@ -3,9 +3,11 @@ package mafia
 import (
 	// system packages
 	"log"
+	"strconv"
 
 	// internal packages
 	"github.com/coex1/EchoBot/internal/data"
+	"github.com/coex1/EchoBot/internal/general"
 
 	// external package
 	dgo "github.com/bwmarrin/discordgo"
@@ -54,7 +56,22 @@ func Start_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
 	guild.Mafia.CitizenList = citizenIDs
 
 	//
-	Start_Message(s, i, guild)
+	Role_Message(s, i, guild)
+}
 
-	Vote_Message(s, i, guild, players)
+func Rdy_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
+	guild.Mafia.ReadyID = append(guild.Mafia.ReadyID, i.User.ID)
+	numReady := strconv.Itoa(len(guild.Mafia.ReadyID))
+	numTotal := strconv.Itoa(len(guild.Mafia.AliveUsersID))
+
+	if numReady == numTotal { // 게임 시작
+		guild.Mafia.State = true // 아침 설정
+		Start_Message(s, i, guild)
+	} else {
+		msg := "준비 완료!" + numReady + " / " + numTotal
+		err := general.SendDM(s, i.User.ID, msg)
+		if err != nil {
+			log.Printf("Failed to send DM to user %s: %v\n", i.User.ID, err)
+		}
+	}
 }
