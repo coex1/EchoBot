@@ -3,11 +3,9 @@ package mafia
 import (
 	// system packages
 	"log"
-	"strconv"
 
 	// internal packages
 	"github.com/coex1/EchoBot/internal/data"
-	"github.com/coex1/EchoBot/internal/general"
 
 	// external package
 	dgo "github.com/bwmarrin/discordgo"
@@ -22,33 +20,31 @@ func Start_listUpdate(i *dgo.InteractionCreate, guild *data.Guild) {
 func Start_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
 	// Init
 	guild.Mafia.State = true
-	guild.Mafia.UserDMChannels = make(map[string]string)
+	guild.Mafia.Day = 1
 	guild.Mafia.VoteMap = make(map[string]string)
 	guild.Mafia.VoteCount = make(map[string]int)
+	guild.Mafia.ReadyMap = make(map[string]bool)
+	guild.Mafia.Timer = 0 // TODO : function
 
-	players := guild.Mafia.SelectedUsersID
-
-	for _, id := range players {
-		guild.Mafia.UserDMChannels[id] = ""
+	for _, id := range guild.Mafia.SelectedUsersID {
+		guild.Mafia.ReadyMap[id] = false
 	}
-
-	guild.Mafia.AliveUsersID = guild.Mafia.SelectedUsersID
 
 	var numMafia = guild.Mafia.NumMafia
 	var numPolice = guild.Mafia.NumPolice
-	var NumDoctor = guild.Mafia.NumDoctor
+	var numDoctor = guild.Mafia.NumDoctor
 
-	if len(players) < MIN_PLAYER_CNT {
+	if len(guild.Mafia.SelectedUsersID) < MIN_PLAYER_CNT {
 		log.Println("Invalid player count!")
 		return
 	}
-	if numMafia+numPolice+NumDoctor > len(players) {
+	if numMafia+numPolice+numDoctor > len(guild.Mafia.SelectedUsersID) {
 		log.Println("Exceeded count")
 		return
 	}
 
 	mafiaIDs, policeIDs, doctorIDs, citizenIDs :=
-		sendStartMessage(s, guild, players, numMafia, numPolice, NumDoctor)
+		sendStartMessage(s, guild.Mafia.SelectedUsersID, numMafia, numPolice, numDoctor)
 
 	guild.Mafia.MafiaList = mafiaIDs
 	guild.Mafia.PoliceList = policeIDs
@@ -60,18 +56,27 @@ func Start_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
 }
 
 func Rdy_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
-	guild.Mafia.ReadyID = append(guild.Mafia.ReadyID, i.User.ID)
-	numReady := strconv.Itoa(len(guild.Mafia.ReadyID))
-	numTotal := strconv.Itoa(len(guild.Mafia.AliveUsersID))
+	checkAllPlayersReady := func(readyMap map[string]bool) bool {
+		for _, ready := range readyMap {
+			if !ready {
+				return false
+			}
+		}
+		return true
+	}
+	guild.Mafia.ReadyMap[i.User.ID] = true
 
-	if numReady == numTotal { // 게임 시작
-		guild.Mafia.State = true // 아침 설정
-		Start_Message(s, i, guild)
+	if checkAllPlayersReady(guild.Mafia.ReadyMap) { // 게임 시작
+		guild.Mafia.State = true                               // 아침 설정
+		guild.Mafia.AliveUsersID = guild.Mafia.SelectedUsersID // 생존 유저
+		Day_Message(s, i, guild)
 	} else {
-		msg := "준비 완료!" + numReady + " / " + numTotal
-		err := general.SendDM(s, i.User.ID, msg)
+		err := s.InteractionRespond(i.Interaction, &dgo.InteractionResponse{
+			Type: dgo.InteractionResponseDeferredChannelMessageWithSource,
+		})
 		if err != nil {
-			log.Printf("Failed to send DM to user %s: %v\n", i.User.ID, err)
+			log.Printf("Failed to delayed respone: %v\n", err)
+			return
 		}
 	}
 }

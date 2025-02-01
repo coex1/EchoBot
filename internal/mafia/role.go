@@ -12,12 +12,11 @@ import (
 
 	// internal package
 
-	"github.com/coex1/EchoBot/internal/data"
 	"github.com/coex1/EchoBot/internal/general"
 )
 
 // 플레이어 역할 배정
-func sendStartMessage(s *dgo.Session, guild *data.Guild, players []string, numMafia int, numPolice int, numDoctor int) (mafiaIDs []string, policeIDs []string, doctorIDs []string, citizenIDs []string) {
+func sendStartMessage(s *dgo.Session, players []string, numMafia int, numPolice int, numDoctor int) (mafiaIDs []string, policeIDs []string, doctorIDs []string, citizenIDs []string) {
 
 	// embed for Mafia
 	embedMafia := dgo.MessageEmbed{
@@ -35,7 +34,7 @@ func sendStartMessage(s *dgo.Session, guild *data.Guild, players []string, numMa
 				Components: []dgo.MessageComponent{
 					&dgo.Button{
 						Label:    "준비 완료",
-						Style:    dgo.PrimaryButton,
+						Style:    dgo.SuccessButton,
 						CustomID: "mafia_Rdy_Button",
 					},
 				},
@@ -59,7 +58,7 @@ func sendStartMessage(s *dgo.Session, guild *data.Guild, players []string, numMa
 				Components: []dgo.MessageComponent{
 					&dgo.Button{
 						Label:    "준비 완료",
-						Style:    dgo.PrimaryButton,
+						Style:    dgo.SuccessButton,
 						CustomID: "mafia_Rdy_Button",
 					},
 				},
@@ -83,7 +82,7 @@ func sendStartMessage(s *dgo.Session, guild *data.Guild, players []string, numMa
 				Components: []dgo.MessageComponent{
 					&dgo.Button{
 						Label:    "준비 완료",
-						Style:    dgo.PrimaryButton,
+						Style:    dgo.SuccessButton,
 						CustomID: "mafia_Rdy_Button",
 					},
 				},
@@ -107,7 +106,7 @@ func sendStartMessage(s *dgo.Session, guild *data.Guild, players []string, numMa
 				Components: []dgo.MessageComponent{
 					&dgo.Button{
 						Label:    "준비 완료",
-						Style:    dgo.PrimaryButton,
+						Style:    dgo.SuccessButton,
 						CustomID: "mafia_Rdy_Button",
 					},
 				},

@@ -6,21 +6,20 @@ import (
 
 type Mafia struct {
 	// both
-	SelectedUsersID []string // ID
+	SelectedUsersID []string               // ID
+	AllUserInfo     []dgo.SelectMenuOption // 이름 : ID
 
 	// start
 	NumMafia  int
 	NumPolice int
 	NumDoctor int
 
-	AllUserInfo []dgo.SelectMenuOption // 이름 : ID
-
-	UserDMChannels map[string]string
-
-	ReadyID []string
+	ReadyMap map[string]bool
 
 	// in-game
 	Timer int
+
+	Day int
 
 	State bool // day : 1 | night : 0
 
