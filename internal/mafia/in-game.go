@@ -42,52 +42,47 @@ func Role_Message(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
 
 func Day_Message(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
 	day := strconv.Itoa(guild.Mafia.Day)
-	var options []dgo.SelectMenuOption
-	for _, id := range guild.Mafia.AliveUsersID {
-		member, err := s.GuildMember(guild.ID, id)
+	for _, userID := range guild.Mafia.SelectedUsersID {
+		channel, err := s.UserChannelCreate(userID)
 		if err != nil {
-			log.Printf("Failed to get member info for user %s: %v\n", id, err)
+			log.Printf("Failed to create DM channel for user %s: %v\n", userID, err)
 			continue
 		}
-		options = append(options, dgo.SelectMenuOption{
-			Label: member.User.GlobalName,
-			Value: member.User.ID,
-		})
-	}
-	embed := &dgo.MessageEmbed{
-		Title:       day + "일 차 아침입니다.",
-		Description: "투표할 대상을 선택한 후 '투표하기' 버튼을 눌러주세요!",
-		Color:       0xC87C00,
-	}
-	components := []dgo.MessageComponent{
-		dgo.ActionsRow{
-			Components: []dgo.MessageComponent{
-				&dgo.SelectMenu{
-					MenuType:    dgo.SelectMenuType(dgo.SelectMenuComponent),
-					CustomID:    "mafia_Vote_listUpdate",
-					Placeholder: "한 명을 선택하세요",
-					MaxValues:   1,
-					Options:     options,
+		message := &dgo.MessageSend{
+			Embeds: []*dgo.MessageEmbed{
+				{
+					Title:       day + "일 차 아침입니다.",
+					Description: "투표할 대상을 선택한 후 '투표하기' 버튼을 눌러주세요!",
+					Color:       0xC87C00,
 				},
 			},
-		},
-		dgo.ActionsRow{
 			Components: []dgo.MessageComponent{
-				&dgo.Button{
-					Label:    "투표하기",
-					Style:    dgo.PrimaryButton,
-					CustomID: "mafia_Vote_Button",
+				dgo.ActionsRow{
+					Components: []dgo.MessageComponent{
+						&dgo.SelectMenu{
+							MenuType:    dgo.SelectMenuType(dgo.SelectMenuComponent),
+							CustomID:    "mafia_Vote_listUpdate",
+							Placeholder: "한 명을 선택하세요",
+							MaxValues:   1,
+							Options:     guild.Mafia.AliveUsersID,
+						},
+					},
+				},
+				dgo.ActionsRow{
+					Components: []dgo.MessageComponent{
+						&dgo.Button{
+							Label:    "투표하기",
+							Style:    dgo.PrimaryButton,
+							CustomID: "mafia_Vote_Button",
+						},
+					},
 				},
 			},
-		},
-	}
-	embeds := []*dgo.MessageEmbed{embed}
-	_, err := s.InteractionResponseEdit(i.Interaction, &dgo.WebhookEdit{
-		Embeds:     &embeds,
-		Components: &components,
-	})
-	if err != nil {
-		log.Printf("Failed to final respond: %v\n", err)
+		}
+		_, err = s.ChannelMessageSendComplex(channel.ID, message)
+		if err != nil {
+			log.Printf("Failed to send confirmation DM to user %s: %v\n", userID, err)
+		}
 	}
 }
 

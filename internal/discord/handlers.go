@@ -179,7 +179,7 @@ func RegisterHandlers(s *dgo.Session, guild *data.Guild) {
 					log.Printf("Response to interaction failed [%v]", err)
 					return
 				}
-				mafia.Rdy_Button(s, event, guild)
+				mafia.Ready_Button(s, event, guild)
 			}
 			log.Printf("Finished '%s' handle", customID)
 		}

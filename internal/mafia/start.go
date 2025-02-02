@@ -3,6 +3,7 @@ package mafia
 import (
 	// system packages
 	"log"
+	"sync"
 
 	// internal packages
 	"github.com/coex1/EchoBot/internal/data"
@@ -27,7 +28,16 @@ func Start_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
 	guild.Mafia.Timer = 0 // TODO : function
 
 	for _, id := range guild.Mafia.SelectedUsersID {
+		member, err := s.GuildMember(i.GuildID, id)
+		if err != nil {
+			log.Fatalf("Failed getting members [%v]", err)
+			return
+		}
 		guild.Mafia.ReadyMap[id] = false
+		guild.Mafia.AliveUsersID = append(guild.Mafia.AliveUsersID, dgo.SelectMenuOption{
+			Label: member.User.GlobalName,
+			Value: member.User.ID,
+		})
 	}
 
 	var numMafia = guild.Mafia.NumMafia
@@ -55,28 +65,50 @@ func Start_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
 	Role_Message(s, i, guild)
 }
 
-func Rdy_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
-	checkAllPlayersReady := func(readyMap map[string]bool) bool {
-		for _, ready := range readyMap {
-			if !ready {
+func Ready_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
+	var readyMutex = &sync.Mutex{}
+	allPlayersReady := func(players []string) bool {
+		readyMutex.Lock()
+		defer readyMutex.Unlock()
+
+		for _, playerID := range players {
+			if !guild.Mafia.ReadyMap[playerID] { // 한 명이라도 Ready가 아니면 false 반환
 				return false
 			}
 		}
 		return true
 	}
-	guild.Mafia.ReadyMap[i.User.ID] = true
 
-	if checkAllPlayersReady(guild.Mafia.ReadyMap) { // 게임 시작
-		guild.Mafia.State = true                               // 아침 설정
-		guild.Mafia.AliveUsersID = guild.Mafia.SelectedUsersID // 생존 유저
+	readyMutex.Lock()
+	guild.Mafia.ReadyMap[i.User.ID] = true
+	readyMutex.Unlock()
+
+	log.Printf("User %s is ready!", i.User.ID)
+
+	// 모든 유저가 준비 완료되었는지 확인 후 게임 시작
+	if allPlayersReady(guild.Mafia.SelectedUsersID) {
 		Day_Message(s, i, guild)
 	} else {
+		updatedComponents := []dgo.MessageComponent{
+			dgo.ActionsRow{
+				Components: []dgo.MessageComponent{
+					&dgo.Button{
+						Style:    dgo.SecondaryButton, // 버튼 색상을 Secondary(회색)으로 변경
+						CustomID: "mafia_Rdy_Button",
+						Disabled: true, // 버튼 비활성화
+					},
+				},
+			},
+		}
+		// 응답을 기존 메시지를 업데이트하는 방식으로 변경
 		err := s.InteractionRespond(i.Interaction, &dgo.InteractionResponse{
-			Type: dgo.InteractionResponseDeferredChannelMessageWithSource,
+			Type: dgo.InteractionResponseUpdateMessage, // 기존 메시지를 업데이트
+			Data: &dgo.InteractionResponseData{
+				Components: updatedComponents, // 버튼 업데이트
+			},
 		})
 		if err != nil {
-			log.Printf("Failed to delayed respone: %v\n", err)
-			return
+			log.Printf("Failed to update Ready message for user %s: %v\n", i.User.ID, err)
 		}
 	}
 }

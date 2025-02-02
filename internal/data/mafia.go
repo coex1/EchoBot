@@ -26,7 +26,7 @@ type Mafia struct {
 	VoteMap   map[string]string // ID : Vote_ID
 	VoteCount map[string]int    // ID : Count
 
-	AliveUsersID []string
+	AliveUsersID []dgo.SelectMenuOption
 
 	MafiaList   []string
 	PoliceList  []string
