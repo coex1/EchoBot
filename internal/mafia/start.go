@@ -34,7 +34,8 @@ func Start_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
 			return
 		}
 		guild.Mafia.ReadyMap[id] = false
-		guild.Mafia.AliveUsersID = append(guild.Mafia.AliveUsersID, dgo.SelectMenuOption{
+		guild.Mafia.AliveUsersID = append(guild.Mafia.AliveUsersID, member.User.ID)
+		guild.Mafia.AliveUsersIDMap = append(guild.Mafia.AliveUsersIDMap, dgo.SelectMenuOption{
 			Label: member.User.GlobalName,
 			Value: member.User.ID,
 		})
@@ -70,9 +71,8 @@ func Ready_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
 	allPlayersReady := func(players []string) bool {
 		readyMutex.Lock()
 		defer readyMutex.Unlock()
-
-		for _, playerID := range players {
-			if !guild.Mafia.ReadyMap[playerID] { // 한 명이라도 Ready가 아니면 false 반환
+		for _, id := range players {
+			if !guild.Mafia.ReadyMap[id] { // 한 명이라도 Ready가 아니면 false 반환
 				return false
 			}
 		}
@@ -84,31 +84,8 @@ func Ready_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
 	readyMutex.Unlock()
 
 	log.Printf("User %s is ready!", i.User.ID)
-
 	// 모든 유저가 준비 완료되었는지 확인 후 게임 시작
 	if allPlayersReady(guild.Mafia.SelectedUsersID) {
-		Day_Message(s, i, guild)
-	} else {
-		updatedComponents := []dgo.MessageComponent{
-			dgo.ActionsRow{
-				Components: []dgo.MessageComponent{
-					&dgo.Button{
-						Style:    dgo.SecondaryButton, // 버튼 색상을 Secondary(회색)으로 변경
-						CustomID: "mafia_Rdy_Button",
-						Disabled: true, // 버튼 비활성화
-					},
-				},
-			},
-		}
-		// 응답을 기존 메시지를 업데이트하는 방식으로 변경
-		err := s.InteractionRespond(i.Interaction, &dgo.InteractionResponse{
-			Type: dgo.InteractionResponseUpdateMessage, // 기존 메시지를 업데이트
-			Data: &dgo.InteractionResponseData{
-				Components: updatedComponents, // 버튼 업데이트
-			},
-		})
-		if err != nil {
-			log.Printf("Failed to update Ready message for user %s: %v\n", i.User.ID, err)
-		}
+		Day_Message(s, guild)
 	}
 }
