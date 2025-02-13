@@ -3,7 +3,6 @@ package mafia
 import (
 	// system packages
 	"log"
-	"sync"
 
 	// internal packages
 	"github.com/coex1/EchoBot/internal/data"
@@ -20,6 +19,7 @@ func Start_listUpdate(i *dgo.InteractionCreate, guild *data.Guild) {
 // on interaction event 'mafia_Start_Button'
 func Start_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
 	// Init
+	guild.Mafia.Players = make(map[string]*data.MafiaPlayer)
 	guild.Mafia.State = true
 	guild.Mafia.Day = 1
 	guild.Mafia.VoteMap = make(map[string]string)
@@ -33,6 +33,12 @@ func Start_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
 			log.Fatalf("Failed getting members [%v]", err)
 			return
 		}
+		guild.Mafia.Players[id] = &data.MafiaPlayer{
+			ID:         id,
+			GlobalName: member.User.GlobalName,
+			IsAlive:    true,
+		}
+
 		guild.Mafia.ReadyMap[id] = false
 		guild.Mafia.AliveUsersID = append(guild.Mafia.AliveUsersID, member.User.ID)
 		guild.Mafia.AliveUsersIDMap = append(guild.Mafia.AliveUsersIDMap, dgo.SelectMenuOption{
@@ -55,22 +61,19 @@ func Start_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
 	}
 
 	mafiaIDs, policeIDs, doctorIDs, citizenIDs :=
-		sendStartMessage(s, guild.Mafia.SelectedUsersID, numMafia, numPolice, numDoctor)
+		sendStartMessage(s, guild, guild.Mafia.SelectedUsersID, numMafia, numPolice, numDoctor)
 
 	guild.Mafia.MafiaList = mafiaIDs
 	guild.Mafia.PoliceList = policeIDs
 	guild.Mafia.DoctorList = doctorIDs
 	guild.Mafia.CitizenList = citizenIDs
 
-	//
+	// 역할 개별 전송
 	Role_Message(s, i, guild)
 }
 
 func Ready_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
-	var readyMutex = &sync.Mutex{}
 	allPlayersReady := func(players []string) bool {
-		readyMutex.Lock()
-		defer readyMutex.Unlock()
 		for _, id := range players {
 			if !guild.Mafia.ReadyMap[id] { // 한 명이라도 Ready가 아니면 false 반환
 				return false
@@ -79,9 +82,7 @@ func Ready_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
 		return true
 	}
 
-	readyMutex.Lock()
 	guild.Mafia.ReadyMap[i.User.ID] = true
-	readyMutex.Unlock()
 
 	log.Printf("User %s is ready!", i.User.ID)
 	// 모든 유저가 준비 완료되었는지 확인 후 게임 시작

@@ -98,6 +98,13 @@ func Vote_listUpdate(i *dgo.InteractionCreate, guild *data.Guild) {
 
 // on interaction event 'mafia_Vote_Button'rintf("%v", guild.Mafia.VoteCount)
 func Vote_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
+	allVoteCount := func(voteMap map[string]int) int {
+		total := 0
+		for _, cnt := range voteMap {
+			total += cnt
+		}
+		return total
+	}
 	userID := i.User.ID
 	votedPlayer := guild.Mafia.VoteMap[userID]
 
@@ -105,8 +112,8 @@ func Vote_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
 	guild.Mafia.VoteCount[votedPlayer] += 1
 
 	// 모든 플레이어가 투표를 완료했는지 확인
-	if len(guild.Mafia.VoteMap) == len(guild.Mafia.SelectedUsersID) {
-		log.Println("All players have voted. Sending results...")
+	if allVoteCount(guild.Mafia.VoteCount) == len(guild.Mafia.SelectedUsersID) {
+		log.Printf("All players have voted (%d). Sending results...", allVoteCount(guild.Mafia.VoteCount))
 
 		// 투표 결과 집계
 		var maxVotes int
@@ -115,9 +122,11 @@ func Vote_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
 		countFields := []*dgo.MessageEmbedField{} // 총 투표 집계
 
 		for voter, voted := range guild.Mafia.VoteMap {
+			voterName := guild.Mafia.Players[voter].GlobalName
+
 			// 누가 누구에게 투표했는지 추가
 			voteFields = append(voteFields, &dgo.MessageEmbedField{
-				Name:   fmt.Sprintf("%s ", voter),
+				Name:   fmt.Sprintf("%s ", voterName),
 				Value:  fmt.Sprintf("-->> <@%s>", voted),
 				Inline: true,
 			})
@@ -126,7 +135,7 @@ func Vote_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
 		for player, votes := range guild.Mafia.VoteCount {
 			// 총 투표 개수 추가
 			countFields = append(countFields, &dgo.MessageEmbedField{
-				Name:   fmt.Sprintf("<@%s> ", player),
+				Name:   fmt.Sprintf("<@%s> ", guild.Mafia.Players[player].GlobalName),
 				Value:  fmt.Sprintf("%d 표", votes),
 				Inline: true,
 			})
@@ -134,7 +143,7 @@ func Vote_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
 			// 가장 많이 득표한 플레이어 찾기
 			if votes > maxVotes {
 				maxVotes = votes
-				eliminatedPlayer = player
+				eliminatedPlayer = guild.Mafia.Players[player].GlobalName
 			}
 		}
 
@@ -172,6 +181,9 @@ func Vote_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
 
 		log.Println("Vote results sent to all players.")
 
+		guild.Mafia.VoteMap = make(map[string]string)
+
 		// 게임 진행 관련 다음 단계 로직 추가 가능 (예: 밤 시간으로 전환)
+		guild.Mafia.State = false
 	}
 }

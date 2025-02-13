@@ -1,0 +1,5 @@
+package mafia
+
+func Reset() {
+
+}

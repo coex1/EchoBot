@@ -12,11 +12,12 @@ import (
 
 	// internal package
 
+	"github.com/coex1/EchoBot/internal/data"
 	"github.com/coex1/EchoBot/internal/general"
 )
 
 // 플레이어 역할 배정
-func sendStartMessage(s *dgo.Session, players []string, numMafia int, numPolice int, numDoctor int) (mafiaIDs []string, policeIDs []string, doctorIDs []string, citizenIDs []string) {
+func sendStartMessage(s *dgo.Session, guild *data.Guild, players []string, numMafia int, numPolice int, numDoctor int) (mafiaIDs []string, policeIDs []string, doctorIDs []string, citizenIDs []string) {
 
 	// embed for Mafia
 	embedMafia := dgo.MessageEmbed{
@@ -133,28 +134,36 @@ func sendStartMessage(s *dgo.Session, players []string, numMafia int, numPolice 
 	for _, id := range players {
 		switch {
 		case general.Contains(mafiaIDs, id):
-			err := general.SendComplexDM(s, id, &dataMafia)
+			dmChannelID, err := general.Mafia_SendComplexDM(s, id, &dataMafia)
 			if err != nil {
 				log.Printf("Failed to send DM to user %s: %v\n", id, err)
 			}
+			guild.Mafia.Players[id].DMChannelID = dmChannelID
+			guild.Mafia.Players[id].Role = "Mafia"
 
 		case general.Contains(policeIDs, id):
-			err := general.SendComplexDM(s, id, &dataPolice)
+			dmChannelID, err := general.Mafia_SendComplexDM(s, id, &dataPolice)
 			if err != nil {
 				log.Printf("Failed to send DM to user %s: %v\n", id, err)
 			}
+			guild.Mafia.Players[id].DMChannelID = dmChannelID
+			guild.Mafia.Players[id].Role = "Police"
 
 		case general.Contains(doctorIDs, id):
-			err := general.SendComplexDM(s, id, &dataDoctor)
+			dmChannelID, err := general.Mafia_SendComplexDM(s, id, &dataDoctor)
 			if err != nil {
 				log.Printf("Failed to send DM to user %s: %v\n", id, err)
 			}
+			guild.Mafia.Players[id].DMChannelID = dmChannelID
+			guild.Mafia.Players[id].Role = "Doctor"
 
 		default:
-			err := general.SendComplexDM(s, id, &dataCitizen)
+			dmChannelID, err := general.Mafia_SendComplexDM(s, id, &dataCitizen)
 			if err != nil {
 				log.Printf("Failed to send DM to user %s: %v\n", id, err)
 			}
+			guild.Mafia.Players[id].DMChannelID = dmChannelID
+			guild.Mafia.Players[id].Role = "Citizen"
 		}
 	}
 	return
