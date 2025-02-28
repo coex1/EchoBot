@@ -25,15 +25,14 @@ type Mafia struct {
 
 	Day int
 
-	State bool // day : 1 | night : 0
-
-	// 투표 정보
+	// 투표 정보 (Reset)
 	VoteMap   map[string]string // ID : Vote_ID
 	VoteCount map[string]int    // ID : Count
 
+	State bool // day : 1 | night : 0
+
 	// 생존 정보
-	AliveUsersIDMap []dgo.SelectMenuOption
-	AliveUsersID    []string
+	// AliveUsersID []dgo.SelectMenuOption
 
 	// 역할 리스트
 	MafiaList   []string
@@ -43,9 +42,9 @@ type Mafia struct {
 }
 
 type MafiaPlayer struct {
-	ID          string // Discord User ID
-	GlobalName  string // 유저 닉네임
-	DMChannelID string // DM 채널 ID
-	Role        string // 역할 (Mafia, Police, Doctor, Citizen)
-	IsAlive     bool   // 생존 여부
+	ID          string
+	GlobalName  string
+	DMChannelID string
+	Role        string // (Mafia, Police, Doctor, Citizen)
+	IsAlive     bool
 }

@@ -20,12 +20,10 @@ func Start_listUpdate(i *dgo.InteractionCreate, guild *data.Guild) {
 func Start_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
 	// Init
 	guild.Mafia.Players = make(map[string]*data.MafiaPlayer)
-	guild.Mafia.State = true
 	guild.Mafia.Day = 1
-	guild.Mafia.VoteMap = make(map[string]string)
-	guild.Mafia.VoteCount = make(map[string]int)
+	guild.Mafia.State = true
 	guild.Mafia.ReadyMap = make(map[string]bool)
-	guild.Mafia.Timer = 0 // TODO : function
+	guild.Mafia.Timer = 180 // TODO : function
 
 	for _, id := range guild.Mafia.SelectedUsersID {
 		member, err := s.GuildMember(i.GuildID, id)
@@ -40,36 +38,52 @@ func Start_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
 		}
 
 		guild.Mafia.ReadyMap[id] = false
-		guild.Mafia.AliveUsersID = append(guild.Mafia.AliveUsersID, member.User.ID)
-		guild.Mafia.AliveUsersIDMap = append(guild.Mafia.AliveUsersIDMap, dgo.SelectMenuOption{
-			Label: member.User.GlobalName,
-			Value: member.User.ID,
-		})
 	}
 
-	var numMafia = guild.Mafia.NumMafia
-	var numPolice = guild.Mafia.NumPolice
-	var numDoctor = guild.Mafia.NumDoctor
+	// 투표 필요 정보
+	Reset(guild)
 
 	if len(guild.Mafia.SelectedUsersID) < MIN_PLAYER_CNT {
 		log.Println("Invalid player count!")
 		return
 	}
-	if numMafia+numPolice+numDoctor > len(guild.Mafia.SelectedUsersID) {
+	if guild.Mafia.NumMafia+guild.Mafia.NumPolice+guild.Mafia.NumDoctor > len(guild.Mafia.SelectedUsersID) {
 		log.Println("Exceeded count")
 		return
 	}
 
-	mafiaIDs, policeIDs, doctorIDs, citizenIDs :=
-		sendStartMessage(s, guild, guild.Mafia.SelectedUsersID, numMafia, numPolice, numDoctor)
+	Game_Process(s, i, guild)
+}
 
-	guild.Mafia.MafiaList = mafiaIDs
-	guild.Mafia.PoliceList = policeIDs
-	guild.Mafia.DoctorList = doctorIDs
-	guild.Mafia.CitizenList = citizenIDs
-
-	// 역할 개별 전송
-	Role_Message(s, i, guild)
+func Start_Message(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
+	_, err := s.ChannelMessageSendComplex(i.ChannelID, &dgo.MessageSend{
+		Embeds: []*dgo.MessageEmbed{
+			{
+				Title:       "역할이 배정되었습니다!",
+				Description: "**역할과 진행은 개별 DM**을 확인해주세요.",
+				Color:       0xFFFFFF,
+			},
+		},
+		Components: []dgo.MessageComponent{
+			dgo.ActionsRow{
+				Components: []dgo.MessageComponent{
+					&dgo.Button{
+						Label:    "게임 재시작",
+						Style:    dgo.SuccessButton,
+						CustomID: "mafia_restart",
+					},
+					&dgo.Button{
+						Label:    "게임 종료",
+						Style:    dgo.DangerButton,
+						CustomID: "mafia_end",
+					},
+				},
+			},
+		},
+	})
+	if err != nil {
+		log.Printf("Failed to send DM to users [%v]", err)
+	}
 }
 
 func Ready_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {

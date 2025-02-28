@@ -3,7 +3,7 @@ package mafia
 import (
 
 	// system
-	"log"
+
 	"math/rand"
 	"time"
 
@@ -17,7 +17,7 @@ import (
 )
 
 // 플레이어 역할 배정
-func sendStartMessage(s *dgo.Session, guild *data.Guild, players []string, numMafia int, numPolice int, numDoctor int) (mafiaIDs []string, policeIDs []string, doctorIDs []string, citizenIDs []string) {
+func Role_Message(s *dgo.Session, guild *data.Guild) {
 
 	// embed for Mafia
 	embedMafia := dgo.MessageEmbed{
@@ -116,55 +116,41 @@ func sendStartMessage(s *dgo.Session, guild *data.Guild, players []string, numMa
 	}
 
 	// shuffle algorithm
-	shuffled := make([]string, len(players))
-	copy(shuffled, players)
+	shuffled := make([]string, len(guild.Mafia.SelectedUsersID))
+	copy(shuffled, guild.Mafia.SelectedUsersID)
 
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	r.Shuffle(len(shuffled), func(i, j int) {
 		shuffled[i], shuffled[j] = shuffled[j], shuffled[i]
 	})
 
-	mafiaIDs = shuffled[:numMafia]
-	shuffled = shuffled[numMafia:]
-	policeIDs = shuffled[:numPolice]
-	shuffled = shuffled[numPolice:]
-	doctorIDs = shuffled[:numDoctor]
-	citizenIDs = shuffled[numDoctor:]
+	mafiaIDs := shuffled[:guild.Mafia.NumMafia]
+	shuffled = shuffled[guild.Mafia.NumMafia:]
+	policeIDs := shuffled[:guild.Mafia.NumPolice]
+	shuffled = shuffled[guild.Mafia.NumPolice:]
+	doctorIDs := shuffled[:guild.Mafia.NumDoctor]
 
-	for _, id := range players {
+	for _, player := range guild.Mafia.Players {
 		switch {
-		case general.Contains(mafiaIDs, id):
-			dmChannelID, err := general.Mafia_SendComplexDM(s, id, &dataMafia)
-			if err != nil {
-				log.Printf("Failed to send DM to user %s: %v\n", id, err)
-			}
-			guild.Mafia.Players[id].DMChannelID = dmChannelID
-			guild.Mafia.Players[id].Role = "Mafia"
+		case general.Contains(mafiaIDs, player.ID):
+			dmChannelID, _ := general.Mafia_SendComplexDM(s, player.ID, &dataMafia)
+			player.DMChannelID = dmChannelID
+			player.Role = "Mafia"
 
-		case general.Contains(policeIDs, id):
-			dmChannelID, err := general.Mafia_SendComplexDM(s, id, &dataPolice)
-			if err != nil {
-				log.Printf("Failed to send DM to user %s: %v\n", id, err)
-			}
-			guild.Mafia.Players[id].DMChannelID = dmChannelID
-			guild.Mafia.Players[id].Role = "Police"
+		case general.Contains(policeIDs, player.ID):
+			dmChannelID, _ := general.Mafia_SendComplexDM(s, player.ID, &dataPolice)
+			player.DMChannelID = dmChannelID
+			player.Role = "Police"
 
-		case general.Contains(doctorIDs, id):
-			dmChannelID, err := general.Mafia_SendComplexDM(s, id, &dataDoctor)
-			if err != nil {
-				log.Printf("Failed to send DM to user %s: %v\n", id, err)
-			}
-			guild.Mafia.Players[id].DMChannelID = dmChannelID
-			guild.Mafia.Players[id].Role = "Doctor"
+		case general.Contains(doctorIDs, player.ID):
+			dmChannelID, _ := general.Mafia_SendComplexDM(s, player.ID, &dataDoctor)
+			player.DMChannelID = dmChannelID
+			player.Role = "Doctor"
 
 		default:
-			dmChannelID, err := general.Mafia_SendComplexDM(s, id, &dataCitizen)
-			if err != nil {
-				log.Printf("Failed to send DM to user %s: %v\n", id, err)
-			}
-			guild.Mafia.Players[id].DMChannelID = dmChannelID
-			guild.Mafia.Players[id].Role = "Citizen"
+			dmChannelID, _ := general.Mafia_SendComplexDM(s, player.ID, &dataCitizen)
+			player.DMChannelID = dmChannelID
+			player.Role = "Citizen"
 		}
 	}
-	return
 }
