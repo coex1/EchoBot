@@ -29,7 +29,7 @@ type Mafia struct {
 	VoteMap   map[string]string // ID : Vote_ID
 	VoteCount map[string]int    // ID : Count
 
-	State bool // day : 1 | night : 0
+	State bool // Day : True | Night : False
 
 	// 생존 정보
 	// AliveUsersID []dgo.SelectMenuOption

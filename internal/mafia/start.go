@@ -11,19 +11,19 @@ import (
 	dgo "github.com/bwmarrin/discordgo"
 )
 
-// 드롭다운 선택 시 실행
+// 드롭다운 메뉴 선택 시
 func Start_listUpdate(i *dgo.InteractionCreate, guild *data.Guild) {
 	guild.Mafia.SelectedUsersID = i.MessageComponentData().Values
 }
 
 // on interaction event 'mafia_Start_Button'
 func Start_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
-	// Init
+	// 세션 변수 초기화
 	guild.Mafia.Players = make(map[string]*data.MafiaPlayer)
 	guild.Mafia.Day = 1
 	guild.Mafia.State = true
 	guild.Mafia.ReadyMap = make(map[string]bool)
-	guild.Mafia.Timer = 180 // TODO : function
+	guild.Mafia.Timer = 600 // TODO : function
 
 	for _, id := range guild.Mafia.SelectedUsersID {
 		member, err := s.GuildMember(i.GuildID, id)
@@ -40,9 +40,6 @@ func Start_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
 		guild.Mafia.ReadyMap[id] = false
 	}
 
-	// 투표 필요 정보
-	Reset(guild)
-
 	if len(guild.Mafia.SelectedUsersID) < MIN_PLAYER_CNT {
 		log.Println("Invalid player count!")
 		return
@@ -52,7 +49,14 @@ func Start_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
 		return
 	}
 
-	Game_Process(s, i, guild)
+	// 게임 설명 전달 (채널)
+	Start_Message(s, i, guild)
+
+	// 역할 공지 (개별)
+	Role_Message(s, guild)
+
+	// 아침 시작
+	Day_Message(s, guild)
 }
 
 func Start_Message(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
@@ -83,24 +87,5 @@ func Start_Message(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) 
 	})
 	if err != nil {
 		log.Printf("Failed to send DM to users [%v]", err)
-	}
-}
-
-func Ready_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
-	allPlayersReady := func(players []string) bool {
-		for _, id := range players {
-			if !guild.Mafia.ReadyMap[id] { // 한 명이라도 Ready가 아니면 false 반환
-				return false
-			}
-		}
-		return true
-	}
-
-	guild.Mafia.ReadyMap[i.User.ID] = true
-
-	log.Printf("User %s is ready!", i.User.ID)
-	// 모든 유저가 준비 완료되었는지 확인 후 게임 시작
-	if allPlayersReady(guild.Mafia.SelectedUsersID) {
-		Day_Message(s, guild)
 	}
 }

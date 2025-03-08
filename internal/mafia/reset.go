@@ -5,7 +5,7 @@ import (
 	"github.com/coex1/EchoBot/internal/data"
 )
 
-func Reset(guild *data.Guild) []dgo.SelectMenuOption {
+func Vote_Reset(guild *data.Guild) []dgo.SelectMenuOption {
 	var AliveUserID []dgo.SelectMenuOption
 	guild.Mafia.VoteMap = make(map[string]string)
 	guild.Mafia.VoteCount = make(map[string]int)

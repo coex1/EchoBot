@@ -170,16 +170,6 @@ func RegisterHandlers(s *dgo.Session, guild *data.Guild) {
 					return
 				}
 				mafia.Vote_Button(s, event, guild)
-
-			case "mafia_Rdy_Button":
-				err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
-					Type: dgo.InteractionResponseDeferredMessageUpdate,
-				})
-				if err != nil {
-					log.Printf("Response to interaction failed [%v]", err)
-					return
-				}
-				mafia.Ready_Button(s, event, guild)
 			}
 			log.Printf("Finished '%s' handle", customID)
 		}

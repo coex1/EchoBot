@@ -30,17 +30,6 @@ func Role_Message(s *dgo.Session, guild *data.Guild) {
 		Embeds: []*dgo.MessageEmbed{
 			&embedMafia,
 		},
-		Components: []dgo.MessageComponent{
-			dgo.ActionsRow{
-				Components: []dgo.MessageComponent{
-					&dgo.Button{
-						Label:    "준비 완료",
-						Style:    dgo.SuccessButton,
-						CustomID: "mafia_Rdy_Button",
-					},
-				},
-			},
-		},
 	}
 
 	// embed for Police
@@ -53,17 +42,6 @@ func Role_Message(s *dgo.Session, guild *data.Guild) {
 	dataPolice := dgo.MessageSend{
 		Embeds: []*dgo.MessageEmbed{
 			&embedPolice,
-		},
-		Components: []dgo.MessageComponent{
-			dgo.ActionsRow{
-				Components: []dgo.MessageComponent{
-					&dgo.Button{
-						Label:    "준비 완료",
-						Style:    dgo.SuccessButton,
-						CustomID: "mafia_Rdy_Button",
-					},
-				},
-			},
 		},
 	}
 
@@ -78,17 +56,6 @@ func Role_Message(s *dgo.Session, guild *data.Guild) {
 		Embeds: []*dgo.MessageEmbed{
 			&embedDoctor,
 		},
-		Components: []dgo.MessageComponent{
-			dgo.ActionsRow{
-				Components: []dgo.MessageComponent{
-					&dgo.Button{
-						Label:    "준비 완료",
-						Style:    dgo.SuccessButton,
-						CustomID: "mafia_Rdy_Button",
-					},
-				},
-			},
-		},
 	}
 
 	//embed for Citizen
@@ -101,17 +68,6 @@ func Role_Message(s *dgo.Session, guild *data.Guild) {
 	dataCitizen := dgo.MessageSend{
 		Embeds: []*dgo.MessageEmbed{
 			&embedCitizen,
-		},
-		Components: []dgo.MessageComponent{
-			dgo.ActionsRow{
-				Components: []dgo.MessageComponent{
-					&dgo.Button{
-						Label:    "준비 완료",
-						Style:    dgo.SuccessButton,
-						CustomID: "mafia_Rdy_Button",
-					},
-				},
-			},
 		},
 	}
 
