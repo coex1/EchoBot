@@ -6,7 +6,8 @@ import (
 
 type Mafia struct {
 	// 모든 플레이어 정보 (ID -> 플레이어 정보)
-	Players map[string]*MafiaPlayer
+	Players   map[string]*MafiaPlayer
+	ChannelID string
 
 	// 선택된 플레이어 목록
 	SelectedUsersID []string               // ID
@@ -17,28 +18,27 @@ type Mafia struct {
 	NumPolice int
 	NumDoctor int
 
-	// 준비 여부
-	ReadyMap map[string]bool
-
 	// 게임 진행 정보
-	Timer int
+	TimerActive bool
 
 	Day int
 
 	// 투표 정보 (Reset)
-	VoteMap   map[string]string // ID : Vote_ID
-	VoteCount map[string]int    // ID : Count
+	TempVoteMap map[string]string
+	VoteMap     map[string]string // ID : Vote_ID
+	VoteCount   map[string]int    // ID : Count
+	VoteSkip    []string          // ID
 
-	State bool // Day : True | Night : False
+	MafiaTargetMap map[string]string // Used Night Action
+	MafiaTarget    string
+	PoliceTarget   string
+	DoctorTarget   string
 
-	// 생존 정보
-	// AliveUsersID []dgo.SelectMenuOption
+	// Day and Night
+	State bool
 
-	// 역할 리스트
-	MafiaList   []string
-	PoliceList  []string
-	DoctorList  []string
-	CitizenList []string
+	// 스킬 사용 상태
+	NightActionDone map[string]bool // role : bool (Mafia, Police, Doctor)
 }
 
 type MafiaPlayer struct {

@@ -18,12 +18,12 @@ func Start_listUpdate(i *dgo.InteractionCreate, guild *data.Guild) {
 
 // on interaction event 'mafia_Start_Button'
 func Start_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
+	guild.Mafia.ChannelID = i.ChannelID
+
 	// 세션 변수 초기화
 	guild.Mafia.Players = make(map[string]*data.MafiaPlayer)
-	guild.Mafia.Day = 1
+	guild.Mafia.Day = 0
 	guild.Mafia.State = true
-	guild.Mafia.ReadyMap = make(map[string]bool)
-	guild.Mafia.Timer = 600 // TODO : function
 
 	for _, id := range guild.Mafia.SelectedUsersID {
 		member, err := s.GuildMember(i.GuildID, id)
@@ -36,8 +36,6 @@ func Start_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
 			GlobalName: member.User.GlobalName,
 			IsAlive:    true,
 		}
-
-		guild.Mafia.ReadyMap[id] = false
 	}
 
 	if len(guild.Mafia.SelectedUsersID) < MIN_PLAYER_CNT {
@@ -56,7 +54,7 @@ func Start_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
 	Role_Message(s, guild)
 
 	// 아침 시작
-	Day_Message(s, guild)
+	Day_Message(s, i, guild)
 }
 
 func Start_Message(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
@@ -66,22 +64,6 @@ func Start_Message(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) 
 				Title:       "역할이 배정되었습니다!",
 				Description: "**역할과 진행은 개별 DM**을 확인해주세요.",
 				Color:       0xFFFFFF,
-			},
-		},
-		Components: []dgo.MessageComponent{
-			dgo.ActionsRow{
-				Components: []dgo.MessageComponent{
-					&dgo.Button{
-						Label:    "게임 재시작",
-						Style:    dgo.SuccessButton,
-						CustomID: "mafia_restart",
-					},
-					&dgo.Button{
-						Label:    "게임 종료",
-						Style:    dgo.DangerButton,
-						CustomID: "mafia_end",
-					},
-				},
 			},
 		},
 	})

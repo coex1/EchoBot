@@ -170,6 +170,74 @@ func RegisterHandlers(s *dgo.Session, guild *data.Guild) {
 					return
 				}
 				mafia.Vote_Button(s, event, guild)
+
+			case "mafia_Skip_Button":
+				err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
+					Type: dgo.InteractionResponseDeferredMessageUpdate,
+				})
+				if err != nil {
+					log.Printf("Response to interaction failed [%v]", err)
+					return
+				}
+				mafia.Skip_Button(s, event, guild)
+
+			case "mafia_Mafia_listUpdate":
+				err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
+					Type: dgo.InteractionResponseDeferredMessageUpdate,
+				})
+				if err != nil {
+					log.Printf("Response to interaction failed [%v]", err)
+					return
+				}
+				mafia.Mafia_listUpdate(s, event, guild)
+			case "mafia_Mafia_Button":
+				err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
+					Type: dgo.InteractionResponseDeferredMessageUpdate,
+				})
+				if err != nil {
+					log.Printf("Response to interaction failed [%v]", err)
+					return
+				}
+				mafia.Mafia_Skill_Button(s, event, guild)
+
+			case "mafia_Police_listUpdate":
+				err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
+					Type: dgo.InteractionResponseDeferredMessageUpdate,
+				})
+				if err != nil {
+					log.Printf("Response to interaction failed [%v]", err)
+					return
+				}
+				mafia.Police_listUpdate(s, event, guild)
+			case "mafia_Police_Button":
+				err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
+					Type: dgo.InteractionResponseDeferredMessageUpdate,
+				})
+				if err != nil {
+					log.Printf("Response to interaction failed [%v]", err)
+					return
+				}
+				mafia.Police_Skill_Button(s, event, guild)
+
+			case "mafia_Doctor_listUpdate":
+				err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
+					Type: dgo.InteractionResponseDeferredMessageUpdate,
+				})
+				if err != nil {
+					log.Printf("Response to interaction failed [%v]", err)
+					return
+				}
+				mafia.Doctor_listUpdate(s, event, guild)
+			case "mafia_Doctor_Button":
+				err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
+					Type: dgo.InteractionResponseDeferredMessageUpdate,
+				})
+				if err != nil {
+					log.Printf("Response to interaction failed [%v]", err)
+					return
+				}
+				mafia.Doctor_Skill_Button(s, event, guild)
+
 			}
 			log.Printf("Finished '%s' handle", customID)
 		}
