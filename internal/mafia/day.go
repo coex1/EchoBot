@@ -67,11 +67,11 @@ func Day_Message(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
 	guild.Mafia.TimerActive = true
 
 	go func() {
-		time.Sleep(10 * time.Minute)
+		time.Sleep(20 * time.Second)
 		if guild.Mafia.TimerActive {
 			autoSkipUnvotedPlayers(guild)
 
-			announceVoteResult(s, i, guild)
+			announceVoteResult(s, guild)
 		}
 	}()
 }
@@ -112,7 +112,7 @@ func Vote_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
 	}
 	log.Printf("User %s Vote %s", i.User.ID, guild.Mafia.VoteMap[i.User.ID])
 
-	announceVoteResult(s, i, guild)
+	announceVoteResult(s, guild)
 }
 
 func Skip_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
@@ -126,22 +126,22 @@ func Skip_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
 	delete(guild.Mafia.VoteMap, i.User.ID)
 	log.Printf("User %s skipped voting", guild.Mafia.Players[i.User.ID].GlobalName)
 
-	announceVoteResult(s, i, guild)
+	announceVoteResult(s, guild)
 }
 
-func announceVoteResult(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
+func announceVoteResult(s *dgo.Session, guild *data.Guild) {
 	numAlive := 0
 	for _, player := range guild.Mafia.Players {
 		if player.IsAlive {
 			numAlive += 1
 		}
 	}
-	// 모든 플레이어가 투표(or 기권)를 완료했을 경우
-	guild.Mafia.TimerActive = false
 
 	if len(guild.Mafia.VoteMap)+len(guild.Mafia.VoteSkip) == numAlive {
 		log.Printf("All players have voted (%d). Sending results...", numAlive)
-		majority := numAlive / 2
+
+		// 타이머 종료
+		guild.Mafia.TimerActive = false
 
 		// === 투표 결과 정리 ===
 		var maxVotes int
@@ -150,7 +150,7 @@ func announceVoteResult(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Gu
 		countFields := []*dgo.MessageEmbedField{} // 투표 결과
 		voteCounts := make(map[int][]string)      // 동점 체크용 (표 수 : 플레이어 목록)
 
-		// 누가 누구에게 투표했는지 추가
+		// 투표 필드
 		for voter, voted := range guild.Mafia.VoteMap {
 			voteFields = append(voteFields, &dgo.MessageEmbedField{
 				Name:   guild.Mafia.Players[voter].GlobalName,
@@ -158,7 +158,7 @@ func announceVoteResult(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Gu
 				Inline: true,
 			})
 		}
-		// 누가 스킵했는지 추가
+		// 스킵 필드
 		for _, id := range guild.Mafia.VoteSkip {
 			voteFields = append(voteFields, &dgo.MessageEmbedField{
 				Name:   guild.Mafia.Players[id].GlobalName,
@@ -190,20 +190,7 @@ func announceVoteResult(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Gu
 		}
 
 		// 케이스별 처리
-		if len(guild.Mafia.VoteMap) == 0 {
-			// 전원 기권
-			resultEmbed := &dgo.MessageEmbed{
-				Title:       "투표 결과",
-				Description: "모든 플레이어가 기권했습니다. 아무도 처형되지 않았습니다.",
-				Color:       0xe74c3c,
-			}
-			for _, player := range guild.Mafia.Players {
-				general.SendComplexDM(s, player.ID, &dgo.MessageSend{
-					Embeds: []*dgo.MessageEmbed{voteEmbed, resultEmbed},
-				})
-			}
-			log.Println("All players skipped voting.")
-		} else if len(voteCounts[maxVotes]) > 1 {
+		if len(voteCounts[maxVotes]) > 1 {
 			// 과반수를 넘지 않거나 동점
 			resultEmbed := &dgo.MessageEmbed{
 				Title:       "투표 결과",
@@ -217,7 +204,7 @@ func announceVoteResult(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Gu
 					Embeds: []*dgo.MessageEmbed{voteEmbed, resultEmbed},
 				})
 			}
-		} else if maxVotes >= majority {
+		} else if maxVotes > numAlive/2 {
 			selectedPlayer := guild.Mafia.Players[selectedPlayerID].GlobalName
 			guild.Mafia.Players[selectedPlayerID].IsAlive = false
 			// 과반수를 넘음
@@ -234,6 +221,19 @@ func announceVoteResult(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Gu
 					Embeds: []*dgo.MessageEmbed{voteEmbed, resultEmbed},
 				})
 			}
+		} else {
+			// 전원 기권
+			resultEmbed := &dgo.MessageEmbed{
+				Title:       "투표 결과",
+				Description: "모든 플레이어가 기권했습니다. 아무도 처형되지 않았습니다.",
+				Color:       0xe74c3c,
+			}
+			for _, player := range guild.Mafia.Players {
+				general.SendComplexDM(s, player.ID, &dgo.MessageSend{
+					Embeds: []*dgo.MessageEmbed{voteEmbed, resultEmbed},
+				})
+			}
+			log.Println("All players skipped voting.")
 		}
 
 		log.Println("Vote results sent to all players.")
@@ -241,7 +241,7 @@ func announceVoteResult(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Gu
 		time.Sleep(5 * time.Second)
 
 		if isGameOver(guild) {
-			gameEndingMessage(s, i, guild)
+			gameEndingMessage(s, guild)
 		} else {
 			Night_Message(s, guild)
 		}

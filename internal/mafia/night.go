@@ -57,9 +57,9 @@ func isNightActionAllDone(guild *data.Guild) bool {
 	if !guild.Mafia.NightActionDone["Police"] {
 		return false
 	}
-	// if !guild.Mafia.NightActionDone["Doctor"] {
-	// 	return false
-	// }
+	if !guild.Mafia.NightActionDone["Doctor"] {
+		return false
+	}
 	return true
 }
 
@@ -234,7 +234,7 @@ func Mafia_Skill_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Gu
 			announceNightResult(s, guild)
 
 			if isGameOver(guild) {
-				gameEndingMessage(s, i, guild)
+				gameEndingMessage(s, guild)
 			} else {
 				time.Sleep(3 * time.Second)
 				Day_Message(s, i, guild)
@@ -273,7 +273,7 @@ func Police_Skill_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.G
 		announceNightResult(s, guild)
 
 		if isGameOver(guild) {
-			gameEndingMessage(s, i, guild)
+			gameEndingMessage(s, guild)
 		} else {
 			time.Sleep(3 * time.Second)
 			Day_Message(s, i, guild)
@@ -292,7 +292,7 @@ func Doctor_Skill_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.G
 		announceNightResult(s, guild)
 
 		if isGameOver(guild) {
-			gameEndingMessage(s, i, guild)
+			gameEndingMessage(s, guild)
 		} else {
 			time.Sleep(3 * time.Second)
 			Day_Message(s, i, guild)

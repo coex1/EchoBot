@@ -237,6 +237,15 @@ func RegisterHandlers(s *dgo.Session, guild *data.Guild) {
 					return
 				}
 				mafia.Doctor_Skill_Button(s, event, guild)
+			case "mafia_restart":
+				err := s.InteractionRespond(event.Interaction, &dgo.InteractionResponse{
+					Type: dgo.InteractionResponseDeferredMessageUpdate,
+				})
+				if err != nil {
+					log.Printf("Response to interaction failed [%v]", err)
+					return
+				}
+				mafia.Start_Button(s, event, guild)
 
 			}
 			log.Printf("Finished '%s' handle", customID)

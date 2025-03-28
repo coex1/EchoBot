@@ -27,7 +27,7 @@ func isGameOver(guild *data.Guild) bool {
 	return mafiaNum >= citizenNum
 }
 
-func gameEndingMessage(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
+func gameEndingMessage(s *dgo.Session, guild *data.Guild) {
 	channelID := guild.Mafia.ChannelID
 	var mafiaNum int
 	var citizenNum int

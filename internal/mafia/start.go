@@ -49,12 +49,6 @@ func Start_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
 
 	// 게임 설명 전달 (채널)
 	Start_Message(s, i, guild)
-
-	// 역할 공지 (개별)
-	Role_Message(s, guild)
-
-	// 아침 시작
-	Day_Message(s, i, guild)
 }
 
 func Start_Message(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
@@ -70,4 +64,10 @@ func Start_Message(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) 
 	if err != nil {
 		log.Printf("Failed to send DM to users [%v]", err)
 	}
+
+	// 역할 공지 (개별)
+	Role_Message(s, guild)
+
+	// 아침 시작
+	Day_Message(s, i, guild)
 }
