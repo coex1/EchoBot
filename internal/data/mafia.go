@@ -1,6 +1,8 @@
 package data
 
 import (
+	"context"
+
 	dgo "github.com/bwmarrin/discordgo"
 )
 
@@ -18,6 +20,8 @@ type Mafia struct {
 	NumPolice int
 	NumDoctor int
 
+	SleepPhrases []string
+
 	// 게임 진행 정보
 	TimerActive bool
 
@@ -33,12 +37,16 @@ type Mafia struct {
 	MafiaTarget    string
 	PoliceTarget   string
 	DoctorTarget   string
+	CitizenPhrases map[string]string
+	CitizenReady   map[string]bool
+
+	CancelFunc context.CancelFunc
 
 	// Day and Night
 	State bool
 
 	// 스킬 사용 상태
-	NightActionDone map[string]bool // role : bool (Mafia, Police, Doctor)
+	NightActionDone map[string]bool // role : bool (Mafia, Police, Doctor, Citizen)
 }
 
 type MafiaPlayer struct {

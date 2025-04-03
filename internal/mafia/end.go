@@ -10,7 +10,7 @@ import (
 	"github.com/coex1/EchoBot/internal/general"
 )
 
-func isGameOver(guild *data.Guild) bool {
+func isGameEnd(guild *data.Guild) bool {
 	var mafiaNum int
 	var citizenNum int
 
@@ -106,11 +106,11 @@ func gameEndingMessage(s *dgo.Session, guild *data.Guild) {
 						Style:    dgo.SuccessButton,
 						CustomID: "mafia_restart",
 					},
-					&dgo.Button{
-						Label:    "게임 종료",
-						Style:    dgo.DangerButton,
-						CustomID: "mafia_end",
-					},
+					// &dgo.Button{
+					// 	Label:    "게임 종료",
+					// 	Style:    dgo.DangerButton,
+					// 	CustomID: "mafia_end",
+					// },
 				},
 			},
 		},

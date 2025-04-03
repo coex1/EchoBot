@@ -3,6 +3,7 @@ package mafia
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"strconv"
 	"time"
 
@@ -41,25 +42,43 @@ func announceNightResult(s *dgo.Session, guild *data.Guild) {
 }
 
 func isNightActionAllDone(guild *data.Guild) bool {
-	// 생존해 있는 마피아, 경찰, 의사가 대상 선택했는지 확인
+	// 경찰 or 의사가 없었을 경우
+	policeEx := false
+	doctorEx := false
 	for _, p := range guild.Mafia.Players {
-		if p.Role == "Police" && !p.IsAlive {
+		if p.Role == "Police" {
+			policeEx = true
+		}
+		if p.Role == "Doctor" {
+			doctorEx = true
+		}
+	}
+
+	// 경찰 or 의사가 죽었을 경우
+	for _, p := range guild.Mafia.Players {
+		if (p.Role == "Police" && !p.IsAlive) || !policeEx {
 			guild.Mafia.NightActionDone["Police"] = true
 		}
-		if p.Role == "Doctor" && !p.IsAlive {
+		if (p.Role == "Doctor" && !p.IsAlive) || !doctorEx {
 			guild.Mafia.NightActionDone["Doctor"] = true
 		}
 	}
 
-	if !guild.Mafia.NightActionDone["Mafia"] {
-		return false
+	// 모두가 작업을 완료했을 경우
+	for _, role := range []string{"Mafia", "Police", "Doctor"} {
+		if !guild.Mafia.NightActionDone[role] {
+			return false
+		}
 	}
-	if !guild.Mafia.NightActionDone["Police"] {
-		return false
+
+	for _, p := range guild.Mafia.Players {
+		if p.IsAlive && p.Role == "Citizen" {
+			if !guild.Mafia.CitizenReady[p.ID] {
+				return false
+			}
+		}
 	}
-	if !guild.Mafia.NightActionDone["Doctor"] {
-		return false
-	}
+
 	return true
 }
 
@@ -103,10 +122,6 @@ func Night_Message(s *dgo.Session, guild *data.Guild) {
 					},
 				}
 				general.SendComplexDM(s, player.ID, message)
-				// _, err := s.ChannelMessageSendComplex(player.DMChannelID, message)
-				// if err != nil {
-				// 	log.Printf("Failed to send confirmation DM to user %s: %v\n", player.ID, err)
-				// }
 			case "Police":
 				message := &dgo.MessageSend{
 					Embeds: []*dgo.MessageEmbed{
@@ -178,7 +193,7 @@ func Night_Message(s *dgo.Session, guild *data.Guild) {
 					Embeds: []*dgo.MessageEmbed{
 						{
 							Title:       day + "일 차 밤입니다.",
-							Description: "아래 문장을 입력하세요",
+							Description: fmt.Sprintf("시민은 할 일이 없습니다.\n**다음 문장을 입력하세요:**\n```%s```", guild.Mafia.SleepPhrases[rand.Intn(len(guild.Mafia.SleepPhrases))]),
 							Color:       0xC87C00,
 						},
 					},
@@ -233,11 +248,12 @@ func Mafia_Skill_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Gu
 			time.Sleep(3 * time.Second)
 			announceNightResult(s, guild)
 
-			if isGameOver(guild) {
+			if isGameEnd(guild) {
+				time.Sleep(3 * time.Second)
 				gameEndingMessage(s, guild)
 			} else {
 				time.Sleep(3 * time.Second)
-				Day_Message(s, i, guild)
+				Day_Message(s, guild)
 			}
 		}
 	}
@@ -272,11 +288,12 @@ func Police_Skill_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.G
 		time.Sleep(3 * time.Second)
 		announceNightResult(s, guild)
 
-		if isGameOver(guild) {
+		if isGameEnd(guild) {
+			time.Sleep(3 * time.Second)
 			gameEndingMessage(s, guild)
 		} else {
 			time.Sleep(3 * time.Second)
-			Day_Message(s, i, guild)
+			Day_Message(s, guild)
 		}
 	}
 }
@@ -291,11 +308,38 @@ func Doctor_Skill_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.G
 		time.Sleep(3 * time.Second)
 		announceNightResult(s, guild)
 
-		if isGameOver(guild) {
+		if isGameEnd(guild) {
+			time.Sleep(3 * time.Second)
 			gameEndingMessage(s, guild)
 		} else {
 			time.Sleep(3 * time.Second)
-			Day_Message(s, i, guild)
+			Day_Message(s, guild)
 		}
+	}
+}
+
+func CitizenSleepHandler(s *dgo.Session, m *dgo.MessageCreate, guild *data.Guild) {
+	p, ok := guild.Mafia.Players[m.Author.ID]
+	if !guild.Mafia.State || !ok || !p.IsAlive || p.Role != "Citizen" {
+		return
+	}
+	if general.Contains(guild.Mafia.SleepPhrases, m.Content) {
+		general.SendDM(s, m.Author.ID, "😴 굿밤! 시민은 푹 쉬세요!")
+		guild.Mafia.CitizenReady[p.ID] = true
+
+		if isNightActionAllDone(guild) {
+			time.Sleep(3 * time.Second)
+			announceNightResult(s, guild)
+
+			if isGameEnd(guild) {
+				time.Sleep(3 * time.Second)
+				gameEndingMessage(s, guild)
+			} else {
+				time.Sleep(3 * time.Second)
+				Day_Message(s, guild)
+			}
+		}
+	} else {
+		general.SendDM(s, m.Author.ID, "❌ 문장이 다릅니다. 정확히 입력해주세요!")
 	}
 }

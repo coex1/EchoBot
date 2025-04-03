@@ -24,6 +24,13 @@ func Start_Button(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
 	guild.Mafia.Players = make(map[string]*data.MafiaPlayer)
 	guild.Mafia.Day = 0
 	guild.Mafia.State = true
+	guild.Mafia.SleepPhrases = append(guild.Mafia.SleepPhrases,
+		"아무 일도 하지 않고 조용히 이불 속으로 들어가기",
+		"침대에 누워 마피아가 누군지 고민하다 잠들기",
+		"나는 생존할 거라 생각하며 잠에 들기",
+		"나의 무고함을 믿으며 조용히 눈을 감기",
+		"다들 무사하길 바라며 이불을 덮기",
+		"이번에도 시민이니까 잠이나 자기")
 
 	for _, id := range guild.Mafia.SelectedUsersID {
 		member, err := s.GuildMember(i.GuildID, id)
@@ -69,5 +76,5 @@ func Start_Message(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) 
 	Role_Message(s, guild)
 
 	// 아침 시작
-	Day_Message(s, i, guild)
+	Day_Message(s, guild)
 }

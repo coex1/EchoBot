@@ -1,6 +1,7 @@
 package mafia
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strconv"
@@ -11,7 +12,7 @@ import (
 	"github.com/coex1/EchoBot/internal/general"
 )
 
-func Day_Message(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
+func Day_Message(s *dgo.Session, guild *data.Guild) {
 	// 투표 정보 초기화
 	players := guild.Mafia.Players
 	AliveUsersID := Reset(guild) // return AliveUserID []dgo.SelectMenuOption
@@ -63,14 +64,43 @@ func Day_Message(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
 		}
 	}
 
-	// 10분 후 자동 기권 처리
+	StartVoteTimer(s, guild)
+}
+
+func StartVoteTimer(s *dgo.Session, guild *data.Guild) {
+	// 이전 타이머 취소
+	if guild.Mafia.CancelFunc != nil {
+		guild.Mafia.CancelFunc()
+	}
+
+	// 10 분 타이머
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+	guild.Mafia.CancelFunc = cancel
 	guild.Mafia.TimerActive = true
 
+	// 종료 1분 전 타이머
 	go func() {
-		time.Sleep(20 * time.Second)
-		if guild.Mafia.TimerActive {
-			autoSkipUnvotedPlayers(guild)
+		select {
+		case <-time.After(9 * time.Minute):
+			if ctx.Err() == nil && guild.Mafia.TimerActive {
+				oneMinute_left(s, guild)
+			}
+		case <-ctx.Done():
+		}
+	}()
 
+	// 10분 타이머 종료 처리
+	go func() {
+		<-ctx.Done()
+
+		if !guild.Mafia.TimerActive {
+			log.Println("Ignore goroutine")
+			return
+		}
+
+		if ctx.Err() == context.DeadlineExceeded {
+			log.Println("AutoSkip Voting!")
+			autoSkipUnvotedPlayers(guild)
 			announceVoteResult(s, guild)
 		}
 	}()
@@ -90,9 +120,13 @@ func autoSkipUnvotedPlayers(guild *data.Guild) {
 	}
 }
 
-// func oneMinute_left(s *dgo.Session, i *dgo.InteractionCreate, guild *data.Guild) {
-// 	// TODO
-// }
+func oneMinute_left(s *dgo.Session, guild *data.Guild) {
+	for _, p := range guild.Mafia.Players {
+		if p.IsAlive {
+			general.SendDM(s, p.ID, "투표 종료까지 **1분** 남았습니다!")
+		}
+	}
+}
 
 func Vote_listUpdate(i *dgo.InteractionCreate, guild *data.Guild) {
 	guild.Mafia.TempVoteMap[i.User.ID] = i.MessageComponentData().Values[0]
@@ -140,8 +174,11 @@ func announceVoteResult(s *dgo.Session, guild *data.Guild) {
 	if len(guild.Mafia.VoteMap)+len(guild.Mafia.VoteSkip) == numAlive {
 		log.Printf("All players have voted (%d). Sending results...", numAlive)
 
-		// 타이머 종료
+		// 고루틴 종료
 		guild.Mafia.TimerActive = false
+		if guild.Mafia.CancelFunc != nil {
+			guild.Mafia.CancelFunc()
+		}
 
 		// === 투표 결과 정리 ===
 		var maxVotes int
@@ -173,12 +210,11 @@ func announceVoteResult(s *dgo.Session, guild *data.Guild) {
 				Value:  fmt.Sprintf("**%d 표**", votes),
 				Inline: true,
 			})
-			// 가장 많이 득표한 플레이어 찾기
+			voteCounts[votes] = append(voteCounts[votes], id)
 			if votes > maxVotes {
 				maxVotes = votes
 				selectedPlayerID = id
 			}
-			voteCounts[votes] = append(voteCounts[votes], id)
 		}
 
 		// 투표 내역 임베드
@@ -189,58 +225,57 @@ func announceVoteResult(s *dgo.Session, guild *data.Guild) {
 			Fields:      voteFields,
 		}
 
+		var resultEmbed *dgo.MessageEmbed
+
 		// 케이스별 처리
-		if len(voteCounts[maxVotes]) > 1 {
-			// 과반수를 넘지 않거나 동점
-			resultEmbed := &dgo.MessageEmbed{
+		if len(guild.Mafia.VoteMap) == 0 {
+			// 전원 기권
+			resultEmbed = &dgo.MessageEmbed{
 				Title:       "투표 결과",
-				Description: "아무도 처형되지 않았습니다.",
+				Description: "모든 플레이어가 기권했습니다. 아무도 처형되지 않았습니다.",
+				Color:       0xe74c3c,
+			}
+			log.Println("All players skipped voting.")
+		} else if len(voteCounts[maxVotes]) > 1 {
+			// 과반수를 넘지 않거나 동점
+			resultEmbed = &dgo.MessageEmbed{
+				Title:       "투표 결과",
+				Description: "동점으로 아무도 처형되지 않았습니다.",
 				Color:       0xe74c3c,
 				Fields:      countFields,
-			}
-			// 모든 플레이어에게 DM으로 결과 전송
-			for _, player := range guild.Mafia.Players {
-				general.SendComplexDM(s, player.ID, &dgo.MessageSend{
-					Embeds: []*dgo.MessageEmbed{voteEmbed, resultEmbed},
-				})
 			}
 		} else if maxVotes > numAlive/2 {
 			selectedPlayer := guild.Mafia.Players[selectedPlayerID].GlobalName
 			guild.Mafia.Players[selectedPlayerID].IsAlive = false
 			// 과반수를 넘음
-			resultEmbed := &dgo.MessageEmbed{
+			resultEmbed = &dgo.MessageEmbed{
 				Title:       "투표 결과",
 				Description: fmt.Sprintf("**%s** 님이 과반수로 처형되었습니다.", selectedPlayer),
 				Color:       0xe74c3c, // 빨간색
 				Fields:      countFields,
 			}
-
-			// 모든 플레이어에게 DM으로 결과 전송
-			for _, player := range guild.Mafia.Players {
-				general.SendComplexDM(s, player.ID, &dgo.MessageSend{
-					Embeds: []*dgo.MessageEmbed{voteEmbed, resultEmbed},
-				})
-			}
 		} else {
-			// 전원 기권
-			resultEmbed := &dgo.MessageEmbed{
+			// 과반수를 넘지 않거나 동점
+			resultEmbed = &dgo.MessageEmbed{
 				Title:       "투표 결과",
-				Description: "모든 플레이어가 기권했습니다. 아무도 처형되지 않았습니다.",
+				Description: "과반수를 넘지 않아 아무도 처형되지 않았습니다.",
 				Color:       0xe74c3c,
+				Fields:      countFields,
 			}
-			for _, player := range guild.Mafia.Players {
-				general.SendComplexDM(s, player.ID, &dgo.MessageSend{
-					Embeds: []*dgo.MessageEmbed{voteEmbed, resultEmbed},
-				})
-			}
-			log.Println("All players skipped voting.")
 		}
+
+		for _, player := range guild.Mafia.Players {
+			general.SendComplexDM(s, player.ID, &dgo.MessageSend{
+				Embeds: []*dgo.MessageEmbed{voteEmbed, resultEmbed},
+			})
+		}
+		log.Println("All players skipped voting.")
 
 		log.Println("Vote results sent to all players.")
 
 		time.Sleep(5 * time.Second)
 
-		if isGameOver(guild) {
+		if isGameEnd(guild) {
 			gameEndingMessage(s, guild)
 		} else {
 			Night_Message(s, guild)

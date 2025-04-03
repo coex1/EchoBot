@@ -251,4 +251,7 @@ func RegisterHandlers(s *dgo.Session, guild *data.Guild) {
 			log.Printf("Finished '%s' handle", customID)
 		}
 	})
+	s.AddHandler(func(s *dgo.Session, m *dgo.MessageCreate) {
+		mafia.CitizenSleepHandler(s, m, guild)
+	})
 }
